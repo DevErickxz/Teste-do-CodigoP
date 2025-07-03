@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>App de Válvulas com Login/Cadastro</title>
+
+  <!-- Seu CSS de válvulas (mantido) -->
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- CSS de autenticação e layout geral -->
+  <link rel="stylesheet" href="auth.css"/>
+</head>
+<body>
+
+  <!-- LOGIN VIEW -->
+  <div id="login-view" class="view">
+    <form id="login-form" class="auth-form">
+      <h2>Login</h2>
+      <input type="text" id="login-username" placeholder="Usuário" required/>
+      <input type="password" id="login-password" placeholder="Senha" required/>
+      <button type="submit">Entrar</button>
+      <p class="error" id="login-error"></p>
+      <p class="switch">Não tem conta? <a href="#" id="to-register">Cadastre‑se aqui</a></p>
+    </form>
+  </div>
+
+  <!-- REGISTER VIEW -->
+  <div id="register-view" class="view">
+    <form id="register-form" class="auth-form">
+      <h2>Cadastro</h2>
+      <input type="text" id="reg-username" placeholder="Escolha um usuário" required/>
+      <input type="password" id="reg-password" placeholder="Escolha uma senha" required/>
+      <button type="submit">Cadastrar</button>
+      <p class="error" id="reg-error"></p>
+      <p class="switch">Já tem conta? <a href="#" id="to-login">Faça login aqui</a></p>
+    </form>
+  </div>
+
+  <!-- VALVES VIEW -->
+  <div id="valve-view" class="view">
+    <header class="valve-header">
+      <button onclick="logout()">Sair</button>
+      <button id="change-user-btn" onclick="logout()">Mudar usuário</button>
+    </header>
+
+    <div class="sides">
+      <strong>Lados:</strong>
+      <button class="side-btn" data-side="A">A</button>
+      <button class="side-btn" data-side="B">B</button>
+      <button class="side-btn" data-side="C">C</button>
+      <button class="side-btn" data-side="D">D</button>
+    </div>
+
+    <h2 id="side-title" class="side-title">Lado A</h2>
+
+    <div id="valvulas-container" class="container"></div>
+    <div id="pergunta-global-container"></div>
+
+    <div class="navegacao">
+      <button id="btn-prev">← Página Anterior</button>
+      <button id="btn-next">Próxima Página →</button>
+      <button id="btn-reset">Resetar Tudo</button>
+    </div>
+
+    <div id="confirmar-container">
+      <button id="btn-confirmar">Confirmar todas as válvulas</button>
+    </div>
+
+    <!-- Modais -->
+    <div id="modal-confirmacao-geral" class="modal">
+      <div class="modal-content">
+        <h3>Deseja confirmar todas as válvulas deste lado?</h3>
+        <button id="btn-sim-confirmar">Sim</button>
+        <button id="btn-nao-confirmar">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="modal-reset" class="modal">
+      <div class="modal-content">
+        <h3>Tem certeza que deseja resetar tudo deste lado?</h3>
+        <button id="btn-sim-resetar">Sim</button>
+        <button id="btn-nao-resetar">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="modal-confirmacao" class="modal">
+      <div class="modal-content">
+        <h3>Resumo da Limpeza</h3>
+        <pre id="resumo-text-modal" class="resumo-text"></pre>
+        <button id="btn-download-modal">Download do .txt</button>
+        <button id="btn-fechar-modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+<!-- Scripts -->
+<script src="auth.js"></script>
+<script src="script.js"></script>
+<script>
+  // Controle de views
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id)?.classList.add('active');
+    if (id === 'valve-view' && typeof initValves === 'function') {
+      initValves();
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (isLoggedIn()) showView('valve-view');
+    else showView('login-view');
+
+    document.getElementById('to-register').onclick = e => {
+      e.preventDefault();
+      showView('register-view');
+    };
+    document.getElementById('to-login').onclick = e => {
+      e.preventDefault();
+      showView('login-view');
+    };
+
+    document.getElementById('login-form').onsubmit = e => {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value;
+      if (loginUser(u, p)) showView('valve-view');
+      else alert('Usuário ou senha inválidos');
+    };
+
+    document.getElementById('register-form').onsubmit = e => {
+      e.preventDefault();
+      const u = document.getElementById('reg-username').value.trim();
+      const p = document.getElementById('reg-password').value;
+      try {
+        registerUser(u, p);
+        sessionStorage.setItem('loggedInUser', u);
+        showView('valve-view');
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+  });
+</script> <!-- controle de views, login e initValves -->
+</body>
+</html>

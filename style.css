@@ -1,0 +1,274 @@
+/* === RESET GERAL === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(120deg, #1a2a6c, #b21f1f, #fdbb2d); 
+  background-size: auto, cover;
+  background-attachment: fixed;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+/* === VALVULAS CIRCULARES COM SOMBRA E ANIMAÇÃO === */
+.valvula-wrapper {
+  text-align: center;
+}
+
+.valvula {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 8px 20px rgba(102,126,234,0.35);
+  text-align: center;
+  user-select: none;
+}
+
+.valvula:hover {
+  transform: scale(1.08) rotate(2deg);
+  box-shadow: 0 12px 28px rgba(102,126,234,0.45);
+}
+
+.confirmado-texto {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+/* Botão editar */
+.btn-editar-inside {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 0.75rem;
+  background: #fff;
+  color: #333;
+  border: none;
+  border-radius: 10px;
+  padding: 3px 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.btn-editar-inside:hover {
+  transform: scale(1.1);
+}
+
+/* GRID DAS VÁLVULAS */
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+  margin-top: 2rem;
+}
+
+/* === PERGUNTA COM BOTÕES 1–5 === */
+#pergunta-global-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+#pergunta-global-container.show {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.pergunta-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.4s ease;
+}
+
+.pergunta {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.respostas {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.respostas button {
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.respostas button:hover {
+  transform: scale(1.15);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  animation: pulse 0.6s;
+}
+
+/* === NAVEGAÇÃO E BOTÕES === */
+.navegacao {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.navegacao button,
+#btn-confirmar {
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 600;
+}
+
+#btn-prev,
+#btn-next {
+  background: #667eea;
+  color: #fff;
+}
+
+#btn-reset {
+  background: #e53e3e;
+  color: #fff;
+}
+
+#btn-confirmar {
+  background: #38a169;
+  color: #fff;
+  margin-top: 2rem;
+}
+
+.navegacao button:hover,
+#btn-confirmar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* === MODAIS === */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal.show,
+.modal.open {
+  display: flex;
+  animation: fadeIn 0.25s ease;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 90%;
+  text-align: center;
+  animation: popIn 0.3s ease;
+}
+
+.modal-content button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#btn-download-modal {
+  background: #3182ce;
+  color: white;
+}
+
+#btn-fechar-modal,
+#btn-nao-resetar,
+#btn-nao-confirmar {
+  background: #e53e3e;
+  color: white;
+}
+
+#btn-sim-resetar,
+#btn-sim-confirmar {
+  background: #38a169;
+  color: white;
+}
+
+.resumo-text {
+  margin-top: 1rem;
+  text-align: left;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.95rem;
+}
+
+/* === ANIMAÇÕES === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

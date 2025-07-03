@@ -1,0 +1,240 @@
+/* auth.css */
+
+/* Estilos globais e layout de "views" */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f0f2f5;
+  color: #333;
+}
+
+/* Cada tela usa a classe .view; só .active fica visível */
+.view {
+  display: none;
+  width: 100%;
+  min-height: 100vh;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.view.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Formulários de auth */
+.auth-form {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-form h2 {
+  text-align: center;
+}
+
+.auth-form input,
+.auth-form button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.auth-form button {
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.auth-form button:hover {
+  background: #5a67d8;
+}
+
+.auth-form .error {
+  color: #e53e3e;
+  min-height: 1.2em;
+}
+
+.auth-form .switch {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.auth-form .switch a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+/* Header e botões de logout/mudar */
+.valve-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.valve-header button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.valve-header button:hover {
+  background: #5a67d8;
+}
+
+/* Botões de Lado */
+.sides {
+  margin-bottom: 1rem;
+}
+
+.side-btn {
+  margin: 0 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+}
+
+.side-btn.active {
+  background: #000;
+}
+
+/* Título de Lado */
+.side-title {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  text-align: center;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Container de válvulas */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Cada item de válvula */
+.valvula-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Botão editar dentro da item */
+.btn-editar-inside {
+  padding: 0.25rem 0.5rem;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Navegação */
+.navegacao {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.navegacao button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 25px;
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Reset e Confirmar */
+#btn-reset {
+  background: #e53e3e;
+}
+
+#confirmar-container {
+  text-align: center;
+}
+
+#btn-confirmar {
+  padding: 0.75rem 1.5rem;
+  background: #48bb78;
+  border: none;
+  border-radius: 25px;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Modais */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.open, .modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 90%;
+  text-align: center;
+}
+
+.modal-content button {
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#btn-sim-confirmar,
+#btn-sim-resetar,
+#btn-download-modal {
+  background: #48bb78;
+  color: #fff;
+}
+
+#btn-nao-confirmar,
+#btn-nao-resetar,
+#btn-fechar-modal {
+  background: #e53e3e;
+  color: #fff;
+}
+
+/* Resumo */
+.resumo-text {
+  text-align: left;
+  white-space: pre-wrap;
+  margin-bottom: 1rem;
+}
