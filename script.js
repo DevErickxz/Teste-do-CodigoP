@@ -1,7 +1,4 @@
-// script.js
-
 const allValves = Array.from({ length: 48 }, (_, i) => `Válvula ${i + 1}`);
-
 const sides = {
   A: allValves.slice(0, 12),
   B: allValves.slice(12, 24),
@@ -10,8 +7,6 @@ const sides = {
 };
 
 let currentSide = 'A';
-let currentPage = 0;
-const pageSize = 6;
 const votos = { A: {}, B: {}, C: {}, D: {} };
 const confirmadas = { A: {}, B: {}, C: {}, D: {} };
 let valvulaAberta = null;
@@ -21,11 +16,8 @@ const sideTitle = document.getElementById('side-title');
 const container = document.getElementById('valvulas-container');
 const perguntaContainer = document.getElementById('pergunta-global-container');
 
-const btnPrev = document.getElementById('btn-prev');
-const btnNext = document.getElementById('btn-next');
 const btnReset = document.getElementById('btn-reset');
 const btnConfirmar = document.getElementById('btn-confirmar');
-
 const modalResumo = document.getElementById('modal-confirmacao');
 const resumoTextModal = document.getElementById('resumo-text-modal');
 const btnFecharResumo = document.getElementById('btn-fechar-modal');
@@ -42,7 +34,6 @@ const btnNaoReset = document.getElementById('btn-nao-resetar');
 sideBtns.forEach(btn => {
   btn.onclick = () => {
     currentSide = btn.dataset.side;
-    currentPage = 0;
     initValves();
   };
 });
@@ -50,51 +41,39 @@ sideBtns.forEach(btn => {
 function initValves() {
   sideTitle.textContent = `Lado ${currentSide}`;
   renderValves();
-  updateButtons();
+  updateConfirmar();
   bindListeners();
 }
 
 function renderValves() {
   container.innerHTML = '';
-  const inicio = currentPage * pageSize;
-  const fim = Math.min(inicio + pageSize, sides[currentSide].length);
+  const lado = sides[currentSide];
 
-  for (let i = inicio; i < fim; i++) {
-    const nome = sides[currentSide][i];
-    const wrapper = document.createElement('div');
-    wrapper.className = 'valvula-wrapper';
-
-    const label = document.createElement('div');
-    label.className = 'confirmado-texto';
-    if (confirmadas[currentSide][i]) {
-      label.textContent = `Você confirmou a nota ${votos[currentSide][i]}`;
-    }
-
+  for (let i = 0; i < lado.length; i++) {
+    const nome = lado[i];
+    const nota = votos[currentSide][i] || '';
+    const corClasse = nota ? `nota-${nota}` : '';
     const div = document.createElement('div');
-    div.className = 'valvula';
-    div.textContent = nome;
-
-    if (confirmadas[currentSide][i]) {
-      const btnEdit = document.createElement('button');
-      btnEdit.className = 'btn-editar-inside';
-      btnEdit.textContent = 'Editar';
-      btnEdit.onclick = (e) => {
+    div.className = `valvula-wrapper`;
+    div.innerHTML = `
+      <div class="valvula ${corClasse}">
+        <div class="valvula-label">${nome}</div>
+        <div class="nota-label">${nota ? 'Nota: ' + nota : ''}</div>
+        ${nota ? `<button class="btn-editar-inside" data-index="${i}"><i class="fas fa-pen"></i> Editar</button>` : ''}
+      </div>
+    `;
+    div.onclick = () => {
+      if (!nota) togglePergunta(i, nome);
+    };
+    // Se já votou, só o botão editar chama a pergunta
+    if (nota) {
+      div.querySelector('.btn-editar-inside').onclick = (e) => {
         e.stopPropagation();
-        delete votos[currentSide][i];
-        delete confirmadas[currentSide][i];
-        valvulaAberta = null;
-        initValves();
+        togglePergunta(i, nome);
       };
-      div.appendChild(btnEdit);
-    } else {
-      div.onclick = () => togglePergunta(i, nome);
     }
-
-    wrapper.appendChild(label);
-    wrapper.appendChild(div);
-    container.appendChild(wrapper);
+    container.appendChild(div);
   }
-  updateConfirmar();
 }
 
 function togglePergunta(index, nome) {
@@ -137,55 +116,33 @@ function togglePergunta(index, nome) {
   }
 }
 
-function updateButtons() {
-  const total = sides[currentSide].length;
-  btnPrev.disabled = currentPage === 0;
-  btnNext.disabled = (currentPage + 1) * pageSize >= total;
-  btnReset.style.visibility = Object.keys(votos[currentSide]).length > 0 ? 'visible' : 'hidden';
-}
-
 function updateConfirmar() {
   const total = sides[currentSide].length;
   const confirmadasQtd = Object.keys(confirmadas[currentSide]).length;
+  const pressaoRaizer = document.getElementById('pressao-raizer').value.trim();
+  const pressaoCaixa = document.getElementById('pressao-caixa').value.trim();
   document.getElementById('confirmar-container').style.display =
-    confirmadasQtd === total ? 'block' : 'none';
+    (confirmadasQtd === total && pressaoRaizer && pressaoCaixa) ? 'block' : 'none';
 }
 
 function bindListeners() {
-  btnPrev.onclick = () => {
-    currentPage--;
-    initValves();
-  };
-  btnNext.onclick = () => {
-    currentPage++;
-    initValves();
-  };
-  btnReset.onclick = () => {
-    modalReset.classList.add('show');
-  };
+  btnReset.onclick = () => modalReset.classList.add('show');
   btnSimReset.onclick = () => {
     votos[currentSide] = {};
     confirmadas[currentSide] = {};
-    currentPage = 0;
     modalReset.classList.remove('show');
     initValves();
   };
-  btnNaoReset.onclick = () => {
-    modalReset.classList.remove('show');
-  };
-  btnConfirmar.onclick = () => {
-    modalConfirmar.classList.add('show');
-  };
+  btnNaoReset.onclick = () => modalReset.classList.remove('show');
+
+  btnConfirmar.onclick = () => modalConfirmar.classList.add('show');
   btnSimConfirmar.onclick = () => {
     modalConfirmar.classList.remove('show');
     mostrarResumo();
   };
-  btnNaoConfirmar.onclick = () => {
-    modalConfirmar.classList.remove('show');
-  };
-  btnFecharResumo.onclick = () => {
-    modalResumo.classList.remove('show');
-  };
+  btnNaoConfirmar.onclick = () => modalConfirmar.classList.remove('show');
+
+  btnFecharResumo.onclick = () => modalResumo.classList.remove('show');
   btnDownload.onclick = () => {
     const blob = new Blob([resumoTextModal.textContent], { type: 'text/plain' });
     const link = document.createElement('a');
@@ -199,7 +156,9 @@ function bindListeners() {
 function mostrarResumo() {
   const arr = sides[currentSide];
   const autor = sessionStorage.getItem('loggedInUser') || 'Desconhecido';
-  let txt = `Autor: ${autor}\nLado: ${currentSide}\n\n`;
+  const pressaoRaizer = document.getElementById('pressao-raizer').value.trim();
+  const pressaoCaixa = document.getElementById('pressao-caixa').value.trim();
+  let txt = `Autor: ${autor}\nLado: ${currentSide}\nPressão Raizer: ${pressaoRaizer}\nPressão Caixa: ${pressaoCaixa}\n\n`;
   arr.forEach((nome, i) => {
     const nota = votos[currentSide][i] || '—';
     txt += `${nome}: ${nota}\n`;
@@ -207,3 +166,28 @@ function mostrarResumo() {
   resumoTextModal.textContent = txt;
   modalResumo.classList.add('show');
 }
+
+function logout() {
+  sessionStorage.removeItem('loggedInUser');
+  location.reload();
+}
+
+const inputRaizer = document.getElementById('pressao-raizer');
+const inputCaixa = document.getElementById('pressao-caixa');
+if (inputRaizer && inputCaixa) {
+  inputRaizer.addEventListener('input', updateConfirmar);
+  inputCaixa.addEventListener('input', updateConfirmar);
+}
+
+document.getElementById('btn-theme-toggle').onclick = function() {
+  document.body.classList.toggle('dark');
+  // Troca o ícone do botão
+  const icon = this.querySelector('i');
+  if (document.body.classList.contains('dark')) {
+    icon.classList.remove('fa-moon');
+    icon.classList.add('fa-sun');
+  } else {
+    icon.classList.remove('fa-sun');
+    icon.classList.add('fa-moon');
+  }
+};

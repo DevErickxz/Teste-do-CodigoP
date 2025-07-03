@@ -1,4 +1,30 @@
-/* === RESET GERAL === */
+/* Tema Light (padrão) */
+body {
+  --bg-gradient: linear-gradient(135deg, #f3f6fd 0%, #e9e9f3 100%);
+  --text-color: #232946;
+  --box-bg: #fff;
+  --primary: #7f53ac;
+  --primary-dark: #647dee;
+  --accent: #43e97b;
+  --input-bg: #f7f7fa;
+  --input-border: #e0e0e0;
+  --shadow: 0 8px 32px rgba(0,0,0,0.10);
+}
+
+/* Tema Dark */
+body.dark {
+  --bg-gradient: linear-gradient(135deg, #181c2f 0%, #232946 100%);
+  --text-color: #f3f6fd;
+  --box-bg: #232946;
+  --primary: #43e97b;
+  --primary-dark: #38d39f;
+  --accent: #7f53ac;
+  --input-bg: #181c2f;
+  --input-border: #393e5c;
+  --shadow: 0 8px 32px rgba(24,28,47,0.25);
+}
+
+/* Reset e fonte */
 * {
   margin: 0;
   padding: 0;
@@ -6,269 +32,414 @@
 }
 
 body {
-  background: linear-gradient(120deg, #1a2a6c, #b21f1f, #fdbb2d); 
-  background-size: auto, cover;
-  background-attachment: fixed;
-  font-family: 'Poppins', sans-serif;
-  color: #333;
-  padding: 40px 20px;
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  background: var(--bg-gradient);
   min-height: 100vh;
+  padding: 40px 0;
+  color: var(--text-color);
+  transition: background 0.4s, color 0.3s;
 }
 
-/* === VALVULAS CIRCULARES COM SOMBRA E ANIMAÇÃO === */
-.valvula-wrapper {
+/* Views */
+.view {
+  display: none;
+}
+.view.active {
+  display: block;
+  animation: fadeIn 0.7s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+/* Formulários */
+form {
+  max-width: 350px;
+  margin: 60px auto;
+  background: var(--box-bg);
+  padding: 2.5rem 2rem;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  color: var(--text-color);
+}
+
+form h2 {
   text-align: center;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+  letter-spacing: 1px;
 }
 
-.valvula {
-  width: 100px;
-  height: 100px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+form input {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.2s;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+form input:focus {
+  border: 1.5px solid var(--primary);
+  outline: none;
+  background: var(--box-bg);
+}
+
+form button {
+  padding: 0.7rem 1rem;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #fff;
-  border-radius: 50%;
-  font-weight: bold;
-  font-size: 0.95rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  position: relative;
+  box-shadow: 0 2px 8px rgba(127,83,172,0.08);
+  transition: background 0.2s, transform 0.1s;
+}
+form button:hover {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.link {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+.link a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.link a:hover {
+  color: var(--primary-dark);
+}
+
+/* Header */
+.valve-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem 2rem 0.5rem 2rem;
+}
+.valve-header button {
+  background: #fff;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.valve-header button:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* Inputs de pressão */
+#inputs-pressao {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(127,83,172,0.07);
+  padding: 1.2rem 2rem 1rem 2rem;
+  margin: 0 auto 1.5rem auto;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+#inputs-pressao label {
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.2rem;
+}
+#inputs-pressao input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  background: var(--input-bg);
+}
+
+/* Lados */
+.sides {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  box-shadow: 0 8px 20px rgba(102,126,234,0.35);
+  gap: 0.7rem;
+  margin: 0 auto 1.2rem auto;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.7rem 2rem;
+  box-shadow: 0 2px 12px rgba(127,83,172,0.07);
+}
+.sides strong {
+  color: var(--primary);
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+.side-btn {
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.1rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.side-btn.active, .side-btn:hover {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: scale(1.07);
+}
+
+/* Título do lado */
+#side-title {
   text-align: center;
-  user-select: none;
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin: 1.2rem 0 1.5rem 0;
+  letter-spacing: 1px;
+  font-weight: 700;
 }
 
+/* Container das válvulas */
+.container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2rem 2.5rem;
+  justify-items: center;
+  align-items: start;
+  margin-bottom: 2rem;
+  max-width: 1000px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Válvula */
+.valvula-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+}
+.valvula {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  box-shadow: 0 8px 32px rgba(30,40,80,0.28);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.7rem;
+  font-size: 1.15rem;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.1s;
+  border: 4px solid #232946;
+  position: relative;
+  background: #232946;
+  text-align: center;
+  word-break: break-word;
+  padding: 0.5em;
+}
 .valvula:hover {
-  transform: scale(1.08) rotate(2deg);
-  box-shadow: 0 12px 28px rgba(102,126,234,0.45);
+  box-shadow: 0 16px 48px rgba(37,117,252,0.18);
+  transform: scale(1.08);
+}
+.valvula-label {
+  font-size: 1rem;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  margin-bottom: 0.2rem;
+  text-align: center;
+  word-break: break-word;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+.nota-label {
+  font-size: 0.95rem;
+  color: #fff;
+  opacity: 0.85;
+  margin-bottom: 0.2rem;
 }
 
-.confirmado-texto {
-  font-size: 0.85rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-  transition: all 0.3s ease;
+/* Cores das notas */
+.valvula.nota-1 {
+  background: linear-gradient(135deg, #38d39f, #43e97b); /* verde claro */
+}
+.valvula.nota-2 {
+  background: linear-gradient(135deg, #14532d, #166534); /* verde escuro */
+}
+.valvula.nota-3 {
+  background: linear-gradient(135deg, #ffe259, #ffa751); /* amarelo */
+  color: #7a5c00;
+}
+.valvula.nota-4 {
+  background: linear-gradient(135deg, #ffb347, #ff8300); /* laranja */
+  color: #7a3c00;
+}
+.valvula.nota-5 {
+  background: linear-gradient(135deg, #ff5858, #f857a6); /* vermelho */
 }
 
 /* Botão editar */
 .btn-editar-inside {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  font-size: 0.75rem;
-  background: #fff;
-  color: #333;
+  margin-top: 0.2rem;
+  padding: 0.3rem 0.8rem;
   border: none;
-  border-radius: 10px;
-  padding: 3px 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(127,83,172,0.08);
+  transition: background 0.2s, color 0.2s;
 }
-
 .btn-editar-inside:hover {
-  transform: scale(1.1);
+  background: var(--primary);
+  color: #fff;
+}
+.btn-editar-inside i {
+  margin-right: 0.4em;
 }
 
-/* GRID DAS VÁLVULAS */
-.container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 2rem;
-  justify-items: center;
-  margin-top: 2rem;
-}
-
-/* === PERGUNTA COM BOTÕES 1–5 === */
+/* Pergunta */
 #pergunta-global-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  align-items: center;
+  min-height: 60px;
+  margin-bottom: 1.5rem;
+  transition: opacity 0.3s;
   opacity: 0;
-  transform: scale(0.95);
-  transition: all 0.3s ease;
   pointer-events: none;
 }
-
 #pergunta-global-container.show {
   opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
+  pointer-events: all;
 }
-
 .pergunta-container {
   background: #fff;
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.4s ease;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(127,83,172,0.13);
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
 }
-
 .pergunta {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: var(--primary);
   font-weight: 600;
+  margin-bottom: 0.5rem;
 }
-
 .respostas {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
+  gap: 0.7rem;
 }
-
 .respostas button {
-  background: #667eea;
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-}
-
-.respostas button:hover {
-  transform: scale(1.15);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-  animation: pulse 0.6s;
-}
-
-/* === NAVEGAÇÃO E BOTÕES === */
-.navegacao {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.navegacao button,
-#btn-confirmar {
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.respostas button:hover {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: scale(1.08);
 }
 
-#btn-prev,
-#btn-next {
-  background: #667eea;
-  color: #fff;
-}
-
-#btn-reset {
-  background: #e53e3e;
-  color: #fff;
-}
-
+/* Reset e Confirmar */
+#btn-reset,
 #btn-confirmar {
-  background: #38a169;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #fff;
-  margin-top: 2rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin: 0.5rem 0.7rem 1.5rem 0.7rem;
+  box-shadow: 0 2px 8px rgba(127,83,172,0.08);
+  transition: background 0.2s, transform 0.1s;
 }
-
-.navegacao button:hover,
+#btn-reset:hover,
 #btn-confirmar:hover {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
   transform: scale(1.05);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
-/* === MODAIS === */
+/* Modais */
 .modal {
   display: none;
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(127,83,172,0.18);
   justify-content: center;
   align-items: center;
-  z-index: 999;
 }
-
-.modal.show,
-.modal.open {
+.modal.show {
   display: flex;
-  animation: fadeIn 0.25s ease;
+  animation: fadeIn 0.3s;
 }
-
 .modal-content {
   background: #fff;
-  padding: 2rem;
   border-radius: 16px;
-  max-width: 90%;
-  text-align: center;
-  animation: popIn 0.3s ease;
+  box-shadow: 0 8px 32px rgba(127,83,172,0.18);
+  padding: 2rem 2.5rem;
+  min-width: 320px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
 }
-
 .modal-content button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 1rem;
+  padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  font-weight: bold;
+  margin: 0.3rem 0.5rem;
+  transition: background 0.2s, transform 0.1s;
+}
+.modal-content button:hover {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: scale(1.05);
 }
 
-#btn-download-modal {
-  background: #3182ce;
-  color: white;
-}
-
-#btn-fechar-modal,
-#btn-nao-resetar,
-#btn-nao-confirmar {
-  background: #e53e3e;
-  color: white;
-}
-
-#btn-sim-resetar,
-#btn-sim-confirmar {
-  background: #38a169;
-  color: white;
-}
-
+/* Resumo */
 .resumo-text {
-  margin-top: 1rem;
-  text-align: left;
+  background: #f7f7fa;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 1rem;
+  color: #333;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 1rem;
   white-space: pre-wrap;
-  font-family: monospace;
-  font-size: 0.95rem;
-}
-
-/* === ANIMAÇÕES === */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes popIn {
-  0% {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  box-shadow: 0 2px 8px rgba(127,83,172,0.06);
 }

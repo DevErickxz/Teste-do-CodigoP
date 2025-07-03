@@ -1,32 +1,25 @@
 // auth.js
 
-// Registra um novo usuário em localStorage
-function registerUser(username, password) {
-  const users = JSON.parse(localStorage.getItem('users') || '{}');
-  if (users[username]) {
-    throw new Error('Usuário já existe');
-  }
-  users[username] = password;
-  localStorage.setItem('users', JSON.stringify(users));
+// Cadastro de usuário (email e senha)
+function registerUser(email, password) {
+  return firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(userCredential => userCredential.user)
+    .catch(error => { throw error; });
 }
 
-// Faz login; retorna true se credenciais conferirem
-function loginUser(username, password) {
-  const users = JSON.parse(localStorage.getItem('users') || '{}');
-  if (users[username] && users[username] === password) {
-    sessionStorage.setItem('loggedInUser', username);
-    return true;
-  }
-  return false;
+// Login de usuário (email e senha)
+function loginUser(email, password) {
+  return firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(userCredential => userCredential.user)
+    .catch(error => { throw error; });
 }
 
-// Verifica sessão ativa
+// Verifica se está logado
 function isLoggedIn() {
-  return !!sessionStorage.getItem('loggedInUser');
+  return !!firebase.auth().currentUser;
 }
 
-// Desloga e volta para a view de login
+// Logout
 function logout() {
-  sessionStorage.removeItem('loggedInUser');
-  showView('login-view');
+  firebase.auth().signOut().then(() => location.reload());
 }

@@ -1,48 +1,75 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>App de Válvulas com Login/Cadastro</title>
-
-  <!-- Seu CSS de válvulas (mantido) -->
-  <link rel="stylesheet" href="style.css"/>
-
-  <!-- CSS de autenticação e layout geral -->
-  <link rel="stylesheet" href="auth.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Válvulas - Sistema</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+  <!-- Firebase SDKs compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAJ1_vq5j-Aa6JOXEvUYMxr10lTuCfdTMQ",
+  authDomain: "valvulas-ed105.firebaseapp.com",
+  projectId: "valvulas-ed105",
+  storageBucket: "valvulas-ed105.firebasestorage.app",
+  messagingSenderId: "152027783297",
+  appId: "1:152027783297:web:474885a8874c0184202d80"
+};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 
-  <!-- LOGIN VIEW -->
-  <div id="login-view" class="view">
-    <form id="login-form" class="auth-form">
+  <!-- LOGIN -->
+  <div id="login-view" class="view active">
+    <form id="login-form">
       <h2>Login</h2>
-      <input type="text" id="login-username" placeholder="Usuário" required/>
-      <input type="password" id="login-password" placeholder="Senha" required/>
+      <input type="email" id="login-username" placeholder="E-mail" required />
+      <input type="password" id="login-password" placeholder="Senha" required />
       <button type="submit">Entrar</button>
-      <p class="error" id="login-error"></p>
-      <p class="switch">Não tem conta? <a href="#" id="to-register">Cadastre‑se aqui</a></p>
+      <button type="button" id="btn-google" style="margin-top:10px; background:#fff; color:#232946; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <i class="fab fa-google"></i> Entrar com Google
+      </button>
+      <p class="link"><a href="#" id="to-register">Não tem conta? Cadastre-se</a></p>
     </form>
   </div>
 
-  <!-- REGISTER VIEW -->
+  <!-- REGISTRO -->
   <div id="register-view" class="view">
-    <form id="register-form" class="auth-form">
+    <form id="register-form">
       <h2>Cadastro</h2>
-      <input type="text" id="reg-username" placeholder="Escolha um usuário" required/>
-      <input type="password" id="reg-password" placeholder="Escolha uma senha" required/>
+      <input type="email" id="reg-username" placeholder="E-mail" required />
+      <input type="password" id="reg-password" placeholder="Senha" required />
       <button type="submit">Cadastrar</button>
-      <p class="error" id="reg-error"></p>
-      <p class="switch">Já tem conta? <a href="#" id="to-login">Faça login aqui</a></p>
+      <button type="button" id="btn-google-register" style="margin-top:10px; background:#fff; color:#232946; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <i class="fab fa-google"></i> Criar conta com Google
+      </button>
+      <p class="link"><a href="#" id="to-login">Já tem conta? Faça login</a></p>
     </form>
   </div>
 
-  <!-- VALVES VIEW -->
+  <!-- SISTEMA DE VÁLVULAS -->
   <div id="valve-view" class="view">
     <header class="valve-header">
-      <button onclick="logout()">Sair</button>
-      <button id="change-user-btn" onclick="logout()">Mudar usuário</button>
+      <button id="btn-theme-toggle" title="Alternar tema">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
     </header>
+
+    <div id="inputs-pressao" style="margin-bottom: 1rem;">
+      <label for="pressao-raizer"><strong>Pressão Raizer</strong></label>
+      <input type="text" id="pressao-raizer" placeholder="Digite a pressão raizer" style="margin-bottom:8px;display:block;width:200px;">
+      <label for="pressao-caixa"><strong>Pressão Caixa</strong></label>
+      <input type="text" id="pressao-caixa" placeholder="Digite a pressão caixa" style="display:block;width:200px;">
+    </div>
 
     <div class="sides">
       <strong>Lados:</strong>
@@ -52,38 +79,17 @@
       <button class="side-btn" data-side="D">D</button>
     </div>
 
-    <h2 id="side-title" class="side-title">Lado A</h2>
-
+    <h2 id="side-title">Lado A</h2>
     <div id="valvulas-container" class="container"></div>
     <div id="pergunta-global-container"></div>
 
-    <div class="navegacao">
-      <button id="btn-prev">← Página Anterior</button>
-      <button id="btn-next">Próxima Página →</button>
-      <button id="btn-reset">Resetar Tudo</button>
-    </div>
+    <button id="btn-reset" class="reset-btn">Resetar</button>
 
     <div id="confirmar-container">
       <button id="btn-confirmar">Confirmar todas as válvulas</button>
     </div>
 
-    <!-- Modais -->
-    <div id="modal-confirmacao-geral" class="modal">
-      <div class="modal-content">
-        <h3>Deseja confirmar todas as válvulas deste lado?</h3>
-        <button id="btn-sim-confirmar">Sim</button>
-        <button id="btn-nao-confirmar">Cancelar</button>
-      </div>
-    </div>
-
-    <div id="modal-reset" class="modal">
-      <div class="modal-content">
-        <h3>Tem certeza que deseja resetar tudo deste lado?</h3>
-        <button id="btn-sim-resetar">Sim</button>
-        <button id="btn-nao-resetar">Cancelar</button>
-      </div>
-    </div>
-
+    <!-- MODAIS -->
     <div id="modal-confirmacao" class="modal">
       <div class="modal-content">
         <h3>Resumo da Limpeza</h3>
@@ -92,55 +98,109 @@
         <button id="btn-fechar-modal">Fechar</button>
       </div>
     </div>
+
+    <div id="modal-reset" class="modal">
+      <div class="modal-content">
+        <h3>Deseja resetar tudo deste lado?</h3>
+        <button id="btn-sim-resetar">Sim</button>
+        <button id="btn-nao-resetar">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="modal-confirmacao-geral" class="modal">
+      <div class="modal-content">
+        <h3>Confirmar todas as válvulas deste lado?</h3>
+        <button id="btn-sim-confirmar">Sim</button>
+        <button id="btn-nao-confirmar">Cancelar</button>
+      </div>
+    </div>
   </div>
 
-<!-- Scripts -->
+  <div id="success-animation" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(255,255,255,0.9);align-items:center;justify-content:center;">
+  <div style="text-align:center;">
+    <div style="font-size:3rem;color:#4BB543;">✔</div>
+    <div style="font-size:1.5rem;color:#232946;">Conta criada com sucesso!</div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
 <script src="auth.js"></script>
 <script src="script.js"></script>
 <script>
-  // Controle de views
-  function showView(id) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(id)?.classList.add('active');
-    if (id === 'valve-view' && typeof initValves === 'function') {
-      initValves();
-    }
+  document.getElementById('login-form').onsubmit = async e => {
+  e.preventDefault();
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  try {
+    await loginUser(u, p);
+    showView('valve-view');
+  } catch (err) {
+    alert("Usuário ou senha inválidos.");
   }
+};
+
+document.getElementById('register-form').onsubmit = async e => {
+  e.preventDefault();
+  const u = document.getElementById('reg-username').value.trim();
+  const p = document.getElementById('reg-password').value;
+  try {
+    await registerUser(u, p);
+    showSuccessAnimation();
+    setTimeout(() => showView('valve-view'), 1500);
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
   window.addEventListener('DOMContentLoaded', () => {
     if (isLoggedIn()) showView('valve-view');
-    else showView('login-view');
-
-    document.getElementById('to-register').onclick = e => {
-      e.preventDefault();
-      showView('register-view');
-    };
-    document.getElementById('to-login').onclick = e => {
-      e.preventDefault();
-      showView('login-view');
-    };
-
-    document.getElementById('login-form').onsubmit = e => {
-      e.preventDefault();
-      const u = document.getElementById('login-username').value.trim();
-      const p = document.getElementById('login-password').value;
-      if (loginUser(u, p)) showView('valve-view');
-      else alert('Usuário ou senha inválidos');
-    };
-
-    document.getElementById('register-form').onsubmit = e => {
-      e.preventDefault();
-      const u = document.getElementById('reg-username').value.trim();
-      const p = document.getElementById('reg-password').value;
-      try {
-        registerUser(u, p);
-        sessionStorage.setItem('loggedInUser', u);
-        showView('valve-view');
-      } catch (err) {
-        alert(err.message);
-      }
-    };
   });
-</script> <!-- controle de views, login e initValves -->
+
+  function showView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  if (viewId === 'valve-view' && typeof initValves === 'function') {
+    initValves();
+  }
+}
+  // Função para alternar entre as views
+
+  document.getElementById('btn-google').onclick = async function() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await firebase.auth().signInWithPopup(provider);
+    showView('valve-view');
+  } catch (err) {
+    alert('Erro ao entrar com Google: ' + err.message);
+  }
+};
+
+document.getElementById('btn-google-register').onclick = async function() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await firebase.auth().signInWithPopup(provider);
+    showSuccessAnimation();
+    setTimeout(() => showView('valve-view'), 1500);
+  } catch (err) {
+    alert('Erro ao criar conta com Google: ' + err.message);
+  }
+};
+
+document.getElementById('to-register').onclick = function(e) {
+  e.preventDefault();
+  showView('register-view');
+};
+document.getElementById('to-login').onclick = function(e) {
+  e.preventDefault();
+  showView('login-view');
+};
+
+function showSuccessAnimation() {
+  const anim = document.getElementById('success-animation');
+  anim.style.display = 'flex';
+  setTimeout(() => { anim.style.display = 'none'; }, 1200);
+}
+</script>
+
 </body>
 </html>
