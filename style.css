@@ -476,3 +476,101 @@ form button:hover {
   background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
   transform: scale(1.05);
 }
+
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+  body {
+    padding: 1rem;
+    font-size: 16px;
+  }
+
+  form.auth-form, .modal-content {
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  .sides {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .side-btn {
+    flex: 1 1 40%;
+    max-width: 45%;
+  }
+
+  #valvulas-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .valvula-wrapper {
+    width: 45%;
+  }
+
+  #grafico-container {
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  canvas#grafico-valvulas {
+    max-width: 100% !important;
+  }
+
+  input, select, button {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  header.valve-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #inputs-pressao,
+  #input-usuario-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #inputs-pressao input,
+  #input-usuario {
+    margin-bottom: 0.5rem;
+  }
+
+  .modal .modal-content {
+    width: 100%;
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 768px) {
+  h2, .pergunta, .modal-content h3 {
+    text-align: center;
+  }
+
+  #btn-reset, #btn-confirmar {
+    width: 100%;
+    margin: 0.5rem auto;
+    display: block;
+  }
+}
+
+
+@media (max-width: 500px) {
+  .valvula-wrapper {
+    width: 100px;
+  }
+  .valvula {
+    width: 90px;
+    height: 90px;
+    font-size: 0.9rem;
+  }
+}
