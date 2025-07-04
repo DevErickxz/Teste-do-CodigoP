@@ -443,3 +443,36 @@ form button:hover {
   white-space: pre-wrap;
   box-shadow: 0 2px 8px rgba(127,83,172,0.06);
 }
+#grafico-container {
+  margin-top: 2rem;
+  background: var(--box-bg);
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+#periodo-select {
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+#btn-gerar-grafico {
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+#btn-gerar-grafico:hover {
+  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+  transform: scale(1.05);
+}

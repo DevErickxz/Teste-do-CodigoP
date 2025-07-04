@@ -13,15 +13,16 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
   <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAJ1_vq5j-Aa6JOXEvUYMxr10lTuCfdTMQ",
-  authDomain: "valvulas-ed105.firebaseapp.com",
-  projectId: "valvulas-ed105",
-  storageBucket: "valvulas-ed105.firebasestorage.app",
-  messagingSenderId: "152027783297",
-  appId: "1:152027783297:web:474885a8874c0184202d80"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJ1_vq5j-Aa6JOXEvUYMxr10lTuCfdTMQ",
+      authDomain: "valvulas-ed105.firebaseapp.com",
+      projectId: "valvulas-ed105",
+      storageBucket: "valvulas-ed105.firebasestorage.app",
+      messagingSenderId: "152027783297",
+      appId: "1:152027783297:web:474885a8874c0184202d80"
+    };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -34,7 +35,7 @@ const firebaseConfig = {
       <input type="email" id="login-username" placeholder="E-mail" required />
       <input type="password" id="login-password" placeholder="Senha" required />
       <button type="submit">Entrar</button>
-      <button type="button" id="btn-google" style="margin-top:10px; background:#fff; color:#232946; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <button type="button" id="btn-google" style="margin-top:10px;">
         <i class="fab fa-google"></i> Entrar com Google
       </button>
       <p class="link"><a href="#" id="to-register">Não tem conta? Cadastre-se</a></p>
@@ -45,30 +46,44 @@ const firebaseConfig = {
   <div id="register-view" class="view">
     <form id="register-form">
       <h2>Cadastro</h2>
+      <input type="text" id="reg-nome" placeholder="Nome completo" required />
       <input type="email" id="reg-username" placeholder="E-mail" required />
       <input type="password" id="reg-password" placeholder="Senha" required />
       <button type="submit">Cadastrar</button>
-      <button type="button" id="btn-google-register" style="margin-top:10px; background:#fff; color:#232946; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <button type="button" id="btn-google-register" style="margin-top:10px;">
         <i class="fab fa-google"></i> Criar conta com Google
       </button>
       <p class="link"><a href="#" id="to-login">Já tem conta? Faça login</a></p>
     </form>
   </div>
 
-  <!-- SISTEMA DE VÁLVULAS -->
+  <!-- MODAL DE PERFIL -->
+  <div id="modal-perfil" class="modal">
+    <div class="modal-content">
+      <h3>Complete seu perfil</h3>
+      <input type="text" id="perfil-nome" placeholder="Nome completo" />
+      <input type="password" id="perfil-senha" placeholder="Defina uma senha (opcional)" />
+      <button id="btn-salvar-perfil">Salvar perfil</button>
+    </div>
+  </div>
+
+  <!-- VÁLVULAS -->
   <div id="valve-view" class="view">
     <header class="valve-header">
-      <button id="btn-theme-toggle" title="Alternar tema">
-        <i class="fas fa-moon"></i>
-      </button>
+      <button id="btn-theme-toggle"><i class="fas fa-moon"></i></button>
       <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
     </header>
 
-    <div id="inputs-pressao" style="margin-bottom: 1rem;">
+    <div id="inputs-pressao">
       <label for="pressao-raizer"><strong>Pressão Raizer</strong></label>
-      <input type="text" id="pressao-raizer" placeholder="Digite a pressão raizer" style="margin-bottom:8px;display:block;width:200px;">
+      <input type="text" id="pressao-raizer" />
       <label for="pressao-caixa"><strong>Pressão Caixa</strong></label>
-      <input type="text" id="pressao-caixa" placeholder="Digite a pressão caixa" style="display:block;width:200px;">
+      <input type="text" id="pressao-caixa" />
+    </div>
+
+    <div id="input-usuario-container">
+      <label for="input-usuario"><strong>Usuário (Nome Completo)</strong></label>
+      <input type="text" id="input-usuario" disabled />
     </div>
 
     <div class="sides">
@@ -87,6 +102,17 @@ const firebaseConfig = {
 
     <div id="confirmar-container">
       <button id="btn-confirmar">Confirmar todas as válvulas</button>
+    </div>
+
+    <!-- GRÁFICO -->
+    <div id="grafico-container" style="margin-top: 2rem;">
+      <label for="periodo-select"><strong>Período:</strong></label>
+      <select id="periodo-select">
+        <option value="7">Últimos 7 dias</option>
+        <option value="30">Últimos 30 dias</option>
+      </select>
+      <button id="btn-gerar-grafico">📊 Ver gráfico de sujeira</button>
+      <canvas id="grafico-valvulas" style="max-width: 800px; margin-top: 1rem;"></canvas>
     </div>
 
     <!-- MODAIS -->
@@ -116,91 +142,11 @@ const firebaseConfig = {
     </div>
   </div>
 
-  <div id="success-animation" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(255,255,255,0.9);align-items:center;justify-content:center;">
-  <div style="text-align:center;">
-    <div style="font-size:3rem;color:#4BB543;">✔</div>
-    <div style="font-size:1.5rem;color:#232946;">Conta criada com sucesso!</div>
-  </div>
-</div>
+  <!-- Chart.js para o gráfico -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- SCRIPTS -->
-<script src="auth.js"></script>
-<script src="script.js"></script>
-<script>
-  document.getElementById('login-form').onsubmit = async e => {
-  e.preventDefault();
-  const u = document.getElementById('login-username').value.trim();
-  const p = document.getElementById('login-password').value;
-  try {
-    await loginUser(u, p);
-    showView('valve-view');
-  } catch (err) {
-    alert("Usuário ou senha inválidos.");
-  }
-};
-
-document.getElementById('register-form').onsubmit = async e => {
-  e.preventDefault();
-  const u = document.getElementById('reg-username').value.trim();
-  const p = document.getElementById('reg-password').value;
-  try {
-    await registerUser(u, p);
-    showSuccessAnimation();
-    setTimeout(() => showView('valve-view'), 1500);
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-  window.addEventListener('DOMContentLoaded', () => {
-    if (isLoggedIn()) showView('valve-view');
-  });
-
-  function showView(viewId) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(viewId).classList.add('active');
-  if (viewId === 'valve-view' && typeof initValves === 'function') {
-    initValves();
-  }
-}
-  // Função para alternar entre as views
-
-  document.getElementById('btn-google').onclick = async function() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  try {
-    await firebase.auth().signInWithPopup(provider);
-    showView('valve-view');
-  } catch (err) {
-    alert('Erro ao entrar com Google: ' + err.message);
-  }
-};
-
-document.getElementById('btn-google-register').onclick = async function() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  try {
-    await firebase.auth().signInWithPopup(provider);
-    showSuccessAnimation();
-    setTimeout(() => showView('valve-view'), 1500);
-  } catch (err) {
-    alert('Erro ao criar conta com Google: ' + err.message);
-  }
-};
-
-document.getElementById('to-register').onclick = function(e) {
-  e.preventDefault();
-  showView('register-view');
-};
-document.getElementById('to-login').onclick = function(e) {
-  e.preventDefault();
-  showView('login-view');
-};
-
-function showSuccessAnimation() {
-  const anim = document.getElementById('success-animation');
-  anim.style.display = 'flex';
-  setTimeout(() => { anim.style.display = 'none'; }, 1200);
-}
-</script>
-
+  <!-- Seus scripts -->
+  <script src="script.js"></script>
+  <script src="auth.js"></script>
 </body>
 </html>
