@@ -594,3 +594,9 @@ canvas#grafico-valvulas {
     font-size: 0.85rem;
   }
 }
+
+/* No seu auth.css ou style.css */
+.navegacao button.active {
+  background: #000; /* Cor preta */
+  /* Você pode adicionar outros estilos para o estado ativo, se quiser */
+}

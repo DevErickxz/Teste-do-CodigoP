@@ -268,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initValves();
       // Se houver uma função para atualizar o botão ativo na navegação de válvulas, chame-a aqui:
       // updateActiveSideButtonValveView();
+      updateActiveSideButtonValveView();
     };
   });
 
