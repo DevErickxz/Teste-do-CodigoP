@@ -1,4 +1,6 @@
-// CONFIG INICIAL
+// script.js
+
+// CONFIG INICIAL (estas variáveis podem permanecer fora do listener)
 const allValves = Array.from({ length: 48 }, (_, i) => `Válvula ${i + 1}`);
 const sides = {
   A: allValves.slice(0, 12),
@@ -11,28 +13,29 @@ const votos = { A: {}, B: {}, C: {}, D: {} };
 const confirmadas = { A: {}, B: {}, C: {}, D: {} };
 let valvulaAberta = null;
 
-// ELEMENTOS DOM
-const sideBtns         = document.querySelectorAll('.side-btn');
-const sideTitle        = document.getElementById('side-title');
-const container        = document.getElementById('valvulas-container');
-const perguntaContainer= document.getElementById('pergunta-global-container');
-const inputRaizer      = document.getElementById('pressao-raizer');
-const inputCaixa       = document.getElementById('pressao-caixa');
-const inputUsuario     = document.getElementById('input-usuario');
-const modalPerfil      = document.getElementById('modal-perfil');
-const btnSalvarPerfil  = document.getElementById('btn-salvar-perfil');
-const modalReset       = document.getElementById('modal-reset');
-const btnSimReset      = document.getElementById('btn-sim-resetar');
-const btnNaoReset      = document.getElementById('btn-nao-resetar');
-const modalConfirmar   = document.getElementById('modal-confirmacao-geral');
-const btnSimConfirmar  = document.getElementById('btn-sim-confirmar');
-const btnNaoConfirmar  = document.getElementById('btn-nao-confirmar');
-const modalResumo      = document.getElementById('modal-confirmacao');
-const resumoTextModal  = document.getElementById('resumo-text-modal');
-const btnFecharResumo  = document.getElementById('btn-fechar-modal');
-const btnDownload      = document.getElementById('btn-download-modal');
+// Declare as variáveis que conterão os elementos DOM.
+// Elas devem ser declaradas com 'let' para que possam ser atribuídas posteriormente.
+let sideBtns;
+let sideTitle;
+let container;
+let perguntaContainer;
+let inputRaizer;
+let inputCaixa;
+let inputUsuario;
+let modalPerfil;
+let btnSalvarPerfil;
+let modalReset;
+let btnSimReset;
+let btnNaoReset;
+let modalConfirmar;
+let btnSimConfirmar;
+let btnNaoConfirmar;
+let modalResumo;
+let resumoTextModal;
+let btnFecharResumo;
+let btnDownload;
 
-// Helper
+// Helper (funções auxiliares)
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -45,34 +48,6 @@ function startApp() {
     .then(doc => { inputUsuario.value = doc.data().nome || ''; });
   initValves();
 }
-
-// AUTENTICAÇÃO
-document.getElementById('login-form').onsubmit = async e => {
-  e.preventDefault();
-  try {
-    const email = document.getElementById('login-username').value.trim();
-    const pwd = document.getElementById('login-password').value;
-    await firebase.auth().signInWithEmailAndPassword(email, pwd);
-    startApp();
-  } catch {
-    alert('E‑mail ou senha inválidos.');
-  }
-};
-
-document.getElementById('register-form').onsubmit = async e => {
-  e.preventDefault();
-  try {
-    const nome = document.getElementById('reg-nome').value.trim();
-    const email = document.getElementById('reg-username').value.trim();
-    const pwd = document.getElementById('reg-password').value;
-    if (!nome) { alert('Informe seu nome completo.'); return; }
-    const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
-    await db.collection('users').doc(cred.user.uid).set({ email, nome });
-    startApp();
-  } catch (err) {
-    alert(err.message);
-  }
-};
 
 async function handleGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
@@ -102,19 +77,6 @@ async function handleGoogle() {
     alert('Falha no login com Google: ' + err.message);
   }
 }
-
-document.getElementById('btn-google').onclick = handleGoogle;
-document.getElementById('btn-google-register').onclick = handleGoogle;
-document.getElementById('to-register').onclick = e => { e.preventDefault(); showView('register-view'); };
-document.getElementById('to-login').onclick = e => { e.preventDefault(); showView('login-view'); };
-
-// VÁLVULAS
-sideBtns.forEach(btn => {
-  btn.onclick = () => {
-    currentSide = btn.dataset.side;
-    initValves();
-  };
-});
 
 function initValves() {
   sideTitle.textContent = `Lado ${currentSide}`;
@@ -208,9 +170,6 @@ function bindListeners() {
   };
 }
 
-// BOTÃO SEMPRE VISÍVEL
-document.getElementById('confirmar-container').style.display = 'block';
-
 async function mostrarResumo() {
   const arr = sides[currentSide];
   const user = firebase.auth().currentUser;
@@ -245,3 +204,77 @@ async function mostrarResumo() {
 function logout() {
   firebase.auth().signOut().then(() => location.reload());
 }
+
+// Início do listener DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  // ELEMENTOS DOM - Atribua os valores aqui dentro
+  sideBtns         = document.querySelectorAll('.side-btn');
+  sideTitle        = document.getElementById('side-title');
+  container        = document.getElementById('valvulas-container');
+  perguntaContainer= document.getElementById('pergunta-global-container');
+  inputRaizer      = document.getElementById('pressao-raizer');
+  inputCaixa       = document.getElementById('pressao-caixa');
+  inputUsuario     = document.getElementById('input-usuario');
+  modalPerfil      = document.getElementById('modal-perfil');
+  btnSalvarPerfil  = document.getElementById('btn-salvar-perfil');
+  modalReset       = document.getElementById('modal-reset');
+  btnSimReset      = document.getElementById('btn-sim-resetar');
+  btnNaoReset      = document.getElementById('btn-nao-resetar');
+  modalConfirmar   = document.getElementById('modal-confirmacao-geral');
+  btnSimConfirmar  = document.getElementById('btn-sim-confirmar');
+  btnNaoConfirmar  = document.getElementById('btn-nao-confirmar');
+  modalResumo      = document.getElementById('modal-confirmacao');
+  resumoTextModal  = document.getElementById('resumo-text-modal');
+  btnFecharResumo  = document.getElementById('btn-fechar-modal');
+  btnDownload      = document.getElementById('btn-download-modal');
+
+  // AUTENTICAÇÃO
+  document.getElementById('login-form').onsubmit = async e => {
+    e.preventDefault();
+    try {
+      const email = document.getElementById('login-username').value.trim();
+      const pwd = document.getElementById('login-password').value;
+      await firebase.auth().signInWithEmailAndPassword(email, pwd);
+      startApp();
+    } catch {
+      alert('E‑mail ou senha inválidos.');
+    }
+  };
+
+  document.getElementById('register-form').onsubmit = async e => {
+    e.preventDefault();
+    try {
+      const nome = document.getElementById('reg-nome').value.trim();
+      const email = document.getElementById('reg-username').value.trim();
+      const pwd = document.getElementById('reg-password').value;
+      if (!nome) { alert('Informe seu nome completo.'); return; }
+      const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
+      await db.collection('users').doc(cred.user.uid).set({ email, nome });
+      startApp();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  document.getElementById('btn-google').onclick = handleGoogle;
+  document.getElementById('btn-google-register').onclick = handleGoogle;
+  document.getElementById('to-register').onclick = e => { e.preventDefault(); showView('register-view'); };
+  document.getElementById('to-login').onclick = e => { e.preventDefault(); showView('login-view'); };
+
+  // VÁLVULAS
+  sideBtns.forEach(btn => {
+    btn.onclick = () => {
+      currentSide = btn.dataset.side;
+      initValves();
+      // Se houver uma função para atualizar o botão ativo na navegação de válvulas, chame-a aqui:
+      // updateActiveSideButtonValveView();
+    };
+  });
+
+  // BOTÃO SEMPRE VISÍVEL
+  // Mova esta linha para cá, para garantir que 'confirmar-container' esteja disponível
+  document.getElementById('confirmar-container').style.display = 'block';
+
+  // Chamar bindListeners aqui
+  bindListeners();
+});
