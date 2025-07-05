@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gráfico de Sujeira</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      padding: 1rem;
+      text-align: center;
+      background: #f9f9f9;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .top-bar button, select {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+    canvas {
+      max-width: 100%;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Gráfico de Sujeira por Lado</h1>
+
+  <div class="top-bar">
+    <button onclick="selecionarLado('A')">Lado A</button>
+    <button onclick="selecionarLado('B')">Lado B</button>
+    <button onclick="selecionarLado('C')">Lado C</button>
+    <button onclick="selecionarLado('D')">Lado D</button>
+    <select id="periodo-select">
+      <option value="7">Últimos 7 dias</option>
+      <option value="30">Últimos 30 dias</option>
+    </select>
+    <button onclick="location.href='index.html'">🔙 Voltar para válvulas</button>
+  </div>
+
+  <canvas id="grafico-valvulas"></canvas>
+
+  <!-- Firebase e Chart.js -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJ1_vq5j-Aa6JOXEvUYMxr10lTuCfdTMQ",
+      authDomain: "valvulas-ed105.firebaseapp.com",
+      projectId: "valvulas-ed105",
+      storageBucket: "valvulas-ed105.appspot.com",
+      messagingSenderId: "152027783297",
+      appId: "1:152027783297:web:474885a8874c0184202d80"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let ladoAtual = 'A';
+    const ctx = document.getElementById('grafico-valvulas').getContext('2d');
+    let grafico = null;
+
+    async function gerarGrafico() {
+      const dias = parseInt(document.getElementById('periodo-select').value);
+      const agora = new Date();
+      const limite = new Date(agora.getTime() - dias * 86400000).toISOString();
+
+      const snapshot = await db.collection('registros')
+        .where('data', '>=', limite)
+        .where('lado', '==', ladoAtual)
+        .get();
+
+      const contagem = {};
+
+      snapshot.forEach(doc => {
+        const valvulas = doc.data().valvulas || {};
+        for (const [nome, nota] of Object.entries(valvulas)) {
+          const n = parseInt(nota);
+          if (n >= 4) contagem[nome] = (contagem[nome] || 0) + 1;
+        }
+      });
+
+      const labels = Object.keys(contagem);
+      const dados = Object.values(contagem);
+
+      if (grafico) grafico.destroy();
+
+      grafico = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: `Notas 4 ou 5 - Lado ${ladoAtual}`,
+            data: dados,
+            backgroundColor: '#ff4d4d'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: `Válvulas mais sujas (notas 4 ou 5) - Lado ${ladoAtual} (${dias} dias)`
+            },
+            legend: { display: false }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Válvula' } },
+            y: { title: { display: true, text: 'Ocorrências' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function selecionarLado(lado) {
+      ladoAtual = lado;
+      gerarGrafico();
+    }
+
+    document.getElementById('periodo-select').addEventListener('change', gerarGrafico);
+    selecionarLado('A');
+  </script>
+</body>
+</html>

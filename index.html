@@ -1,93 +1,56 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Válvulas - Sistema</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gráfico de Sujeira</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="auth.css"> </head>
 <body>
-  <!-- Firebase SDKs compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAJ1_vq5j-Aa6JOXEvUYMxr10lTuCfdTMQ",
-      authDomain: "valvulas-ed105.firebaseapp.com",
-      projectId: "valvulas-ed105",
-      storageBucket: "valvulas-ed105.firebasestorage.app",
-      messagingSenderId: "152027783297",
-      appId: "1:152027783297:web:474885a8874c0184202d80"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
-
-  <!-- LOGIN -->
   <div id="login-view" class="view active">
-    <form id="login-form">
+    <form class="auth-form" id="login-form">
       <h2>Login</h2>
-      <input type="email" id="login-username" placeholder="E-mail" required />
-      <input type="password" id="login-password" placeholder="Senha" required />
+      <input type="email" id="login-username" placeholder="E-mail" required>
+      <input type="password" id="login-password" placeholder="Senha" required>
       <button type="submit">Entrar</button>
-      <button type="button" id="btn-google" style="margin-top:10px;">
-        <i class="fab fa-google"></i> Entrar com Google
-      </button>
-      <p class="link"><a href="#" id="to-register">Não tem conta? Cadastre-se</a></p>
+      <div class="switch">
+        Não tem conta? <a href="#" id="to-register">Cadastre-se</a>
+      </div>
+      <button type="button" id="btn-google">Login com Google</button>
     </form>
   </div>
 
-  <!-- REGISTRO -->
   <div id="register-view" class="view">
-    <form id="register-form">
+    <form class="auth-form" id="register-form">
       <h2>Cadastro</h2>
-      <input type="text" id="reg-nome" placeholder="Nome completo" required />
-      <input type="email" id="reg-username" placeholder="E-mail" required />
-      <input type="password" id="reg-password" placeholder="Senha" required />
+      <input type="text" id="reg-nome" placeholder="Nome Completo" required>
+      <input type="email" id="reg-username" placeholder="E-mail" required>
+      <input type="password" id="reg-password" placeholder="Senha" required>
       <button type="submit">Cadastrar</button>
-      <button type="button" id="btn-google-register" style="margin-top:10px;">
-        <i class="fab fa-google"></i> Criar conta com Google
-      </button>
-      <p class="link"><a href="#" id="to-login">Já tem conta? Faça login</a></p>
+      <div class="switch">
+        Já tem conta? <a href="#" id="to-login">Faça login</a>
+      </div>
+      <button type="button" id="btn-google-register">Cadastrar com Google</button>
     </form>
   </div>
 
-  <!-- MODAL DE PERFIL -->
-  <div id="modal-perfil" class="modal">
-    <div class="modal-content">
-      <h3>Complete seu perfil</h3>
-      <input type="text" id="perfil-nome" placeholder="Nome completo" />
-      <input type="password" id="perfil-senha" placeholder="Defina uma senha (opcional)" />
-      <button id="btn-salvar-perfil">Salvar perfil</button>
-    </div>
-  </div>
-
-  <!-- VÁLVULAS -->
   <div id="valve-view" class="view">
     <header class="valve-header">
-      <button id="btn-theme-toggle"><i class="fas fa-moon"></i></button>
-      <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
-    </header>
+      <button onclick="logout()">Sair</button>
+      <button onclick="showView('graph-view')">Ver Gráfico</button> </header>
 
     <div id="inputs-pressao">
-      <label for="pressao-raizer"><strong>Pressão Raizer</strong></label>
-      <input type="text" id="pressao-raizer" />
-      <label for="pressao-caixa"><strong>Pressão Caixa</strong></label>
-      <input type="text" id="pressao-caixa" />
-    </div>
-
-    <div id="input-usuario-container">
-      <label for="input-usuario"><strong>Usuário (Nome Completo)</strong></label>
-      <input type="text" id="input-usuario" disabled />
+      <label for="input-usuario">Usuário:</label>
+      <input type="text" id="input-usuario" placeholder="Seu Nome" readonly>
+      <label for="pressao-raizer">Pressão Raizer (bar):</label>
+      <input type="number" id="pressao-raizer" placeholder="Ex: 5.2" step="0.1">
+      <label for="pressao-caixa">Pressão Caixa (bar):</label>
+      <input type="number" id="pressao-caixa" placeholder="Ex: 3.8" step="0.1">
     </div>
 
     <div class="sides">
-      <strong>Lados:</strong>
+      <strong>Lado:</strong>
       <button class="side-btn" data-side="A">A</button>
       <button class="side-btn" data-side="B">B</button>
       <button class="side-btn" data-side="C">C</button>
@@ -95,58 +58,238 @@
     </div>
 
     <h2 id="side-title">Lado A</h2>
-    <div id="valvulas-container" class="container"></div>
-    <div id="pergunta-global-container"></div>
 
-    <button id="btn-reset" class="reset-btn">Resetar</button>
+    <div class="container" id="valvulas-container">
+      </div>
+
+    <div id="pergunta-global-container" class="pergunta-global-container">
+      </div>
 
     <div id="confirmar-container">
-      <button id="btn-confirmar">Confirmar todas as válvulas</button>
+      <button id="btn-reset">Resetar Lado</button>
+      <button id="btn-confirmar">Confirmar Registro</button>
     </div>
 
-    <!-- GRÁFICO -->
-    <div id="grafico-container" style="margin-top: 2rem;">
-      <label for="periodo-select"><strong>Período:</strong></label>
-      <select id="periodo-select">
-        <option value="7">Últimos 7 dias</option>
-        <option value="30">Últimos 30 dias</option>
-      </select>
-      <button id="btn-gerar-grafico">📊 Ver gráfico de sujeira</button>
-      <canvas id="grafico-valvulas" style="max-width: 800px; margin-top: 1rem;"></canvas>
-    </div>
-
-    <!-- MODAIS -->
-    <div id="modal-confirmacao" class="modal">
+    <div id="modal-perfil" class="modal">
       <div class="modal-content">
-        <h3>Resumo da Limpeza</h3>
-        <pre id="resumo-text-modal" class="resumo-text"></pre>
-        <button id="btn-download-modal">Download do .txt</button>
-        <button id="btn-fechar-modal">Fechar</button>
+        <h3>Complete seu perfil</h3>
+        <input type="text" id="perfil-nome" placeholder="Nome Completo" required>
+        <input type="password" id="perfil-senha" placeholder="Criar Senha (opcional)">
+        <button id="btn-salvar-perfil">Salvar Perfil</button>
       </div>
     </div>
 
     <div id="modal-reset" class="modal">
       <div class="modal-content">
-        <h3>Deseja resetar tudo deste lado?</h3>
-        <button id="btn-sim-resetar">Sim</button>
-        <button id="btn-nao-resetar">Cancelar</button>
+        <h3>Tem certeza que deseja resetar as notas deste lado?</h3>
+        <div>
+          <button id="btn-sim-resetar">Sim</button>
+          <button id="btn-nao-resetar">Não</button>
+        </div>
       </div>
     </div>
 
     <div id="modal-confirmacao-geral" class="modal">
       <div class="modal-content">
-        <h3>Confirmar todas as válvulas deste lado?</h3>
-        <button id="btn-sim-confirmar">Sim</button>
-        <button id="btn-nao-confirmar">Cancelar</button>
+        <h3>Confirmar registro das notas?</h3>
+        <div>
+          <button id="btn-sim-confirmar">Sim</button>
+          <button id="btn-nao-confirmar">Não</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-confirmacao" class="modal">
+      <div class="modal-content">
+        <h3>Registro Concluído!</h3>
+        <pre id="resumo-text-modal" class="resumo-text"></pre>
+        <button id="btn-fechar-modal">Fechar</button>
+        <button id="btn-download-modal">Baixar Resumo</button>
       </div>
     </div>
   </div>
 
-  <!-- Chart.js para o gráfico -->
+  <div id="graph-view" class="view">
+    <h1>Gráfico de Sujeira por Lado</h1>
+
+    <div class="top-bar">
+      <button class="side-btn-graph" data-side-graph="A">Lado A</button>
+      <button class="side-btn-graph" data-side-graph="B">Lado B</button>
+      <button class="side-btn-graph" data-side-graph="C">Lado C</button>
+      <button class="side-btn-graph" data-side-graph="D">Lado D</button>
+      <select id="periodo-select">
+        <option value="7">Últimos 7 dias</option>
+        <option value="30">Últimos 30 dias</option>
+      </select>
+      <button onclick="showView('valve-view')">🔙 Voltar para válvulas</button>
+      <button onclick="baixarGrafico()">⬇️ Baixar Gráfico</button>
+    </div>
+
+    <canvas id="grafico-valvulas"></canvas>
+  </div>
+
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Seus scripts -->
-  <script src="script.js"></script>
   <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJ1_vq5j-Aa6JOXEvUYMxr10lTuCfdTMQ",
+      authDomain: "valvulas-ed105.firebaseapp.com",
+      projectId: "valvulas-ed105",
+      storageBucket: "valvulas-ed105.appspot.com",
+      messagingSenderId: "152027783297",
+      appId: "1:152027783297:web:474885a8874c0184202d80"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Variáveis e funções relacionadas ao Chart.js
+    let ladoAtualGrafico = 'A';
+    const ctx = document.getElementById('grafico-valvulas').getContext('2d');
+    let grafico = null;
+
+    function formatarData(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString();
+    }
+
+    async function gerarGrafico() {
+      const dias = parseInt(document.getElementById('periodo-select').value);
+      const agora = new Date();
+      const limite = new Date(agora.getTime() - dias * 86400000).toISOString();
+
+      const snapshot = await db.collection('registros')
+        .where('data', '>=', limite)
+        .where('lado', '==', ladoAtualGrafico)
+        .get();
+
+      const ocorrencias = {};
+      snapshot.forEach(doc => {
+        const valvulas = doc.data().valvulas || {};
+        const data = formatarData(doc.data().data);
+        for (const [nome, nota] of Object.entries(valvulas)) {
+          const n = parseInt(nota);
+          if (n >= 4) {
+            if (!ocorrencias[nome]) ocorrencias[nome] = [];
+            ocorrencias[nome].push(`Nota: ${n} - Dia ${data}`);
+          }
+        }
+      });
+
+      const labels = Object.keys(ocorrencias).sort();
+      const dados = labels.map(label => ocorrencias[label].length);
+      const tooltips = labels.map(label => ocorrencias[label].join("\\n"));
+
+      if (grafico) grafico.destroy();
+
+      grafico = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels.length ? labels : ['Nenhum dado'],
+          datasets: [{
+            label: `Notas 4 ou 5 - Lado ${ladoAtualGrafico}`,
+            data: labels.length ? dados : [0],
+            backgroundColor: '#ff4d4d'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const idx = context.dataIndex;
+                  return tooltips[idx] || 'Sem detalhes';
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: `Válvulas mais sujas (notas 4 ou 5) - Lado ${ladoAtualGrafico} (${dias} dias)`
+            },
+            legend: { display: false }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Válvula' } },
+            y: { title: { display: true, text: 'Ocorrências' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // Função para gerenciar o estado ativo dos botões de lado (visualização de válvulas)
+    function updateActiveSideButtonValveView() {
+      document.querySelectorAll('.sides .side-btn').forEach(btn => {
+        if (btn.dataset.side === currentSide) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Função para gerenciar o estado ativo dos botões de lado (visualização de gráfico)
+    function updateActiveSideButtonGraphView() {
+      document.querySelectorAll('#graph-view .top-bar .side-btn-graph').forEach(btn => {
+        if (btn.dataset.sideGraph === ladoAtualGrafico) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Função para selecionar o lado no gráfico e gerar o gráfico
+    function selecionarLadoGrafico(lado) {
+      ladoAtualGrafico = lado;
+      updateActiveSideButtonGraphView(); // Atualiza a classe ativa para os botões de lado do gráfico
+      gerarGrafico();
+    }
+
+    function baixarGrafico() {
+      const link = document.createElement('a');
+      link.download = `grafico_valvulas_${ladoAtualGrafico}.png`;
+      link.href = document.getElementById('grafico-valvulas').toDataURL('image/png');
+      link.click();
+    }
+
+    // Adiciona listener para os botões de lado da visualização de válvulas
+    document.querySelectorAll('.sides .side-btn').forEach(btn => {
+      btn.onclick = () => {
+        currentSide = btn.dataset.side;
+        initValves();
+        updateActiveSideButtonValveView(); // Atualiza a classe ativa para os botões de lado das válvulas
+      };
+    });
+
+    // Inicializa a visualização do gráfico quando o app carrega, se o usuário já estiver logado
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            startApp(); // De script.js, mostra valve-view
+            // Inicializa o botão de lado ativo para a visualização de válvulas
+            updateActiveSideButtonValveView();
+            // Inicializa os dados do gráfico para o lado A e define o botão ativo
+            selecionarLadoGrafico('A');
+        } else {
+            showView('login-view');
+        }
+    });
+
+    document.getElementById('periodo-select').addEventListener('change', gerarGrafico);
+
+    // Adiciona listeners para os botões de lado do gráfico
+    document.querySelectorAll('.side-btn-graph').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selecionarLadoGrafico(btn.dataset.sideGraph);
+        });
+    });
+
+  </script>
 </body>
 </html>
