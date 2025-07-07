@@ -9,19 +9,31 @@ const sides = {
   D: allValves.slice(36, 48)
 };
 let currentSide = 'A';
-const votos = { A: {}, B: {}, C: {}, D: {} };
-const confirmadas = { A: {}, B: {}, C: {}, D: {} };
+let currentArea = 'Raizer'; // Nova variável global para a área atual
+
+// Votos e confirmações agora são aninhados por área e lado
+const votos = {
+    'Raizer': { A: {}, B: {}, C: {}, D: {} },
+    'Caixa': { A: {}, B: {}, C: {}, D: {} }
+};
+const confirmadas = {
+    'Raizer': { A: {}, B: {}, C: {}, D: {} },
+    'Caixa': { A: {}, B: {}, C: {}, D: {} }
+};
+
 let valvulaAberta = null;
 
 // Declare as variáveis que conterão os elementos DOM.
 // Elas devem ser declaradas com 'let' para que possam ser atribuídas posteriormente.
 let sideBtns;
+let areaBtns; // Nova variável para os botões de área
 let sideTitle;
 let container;
 let perguntaContainer;
 let inputRaizer;
 let inputCaixa;
 let inputUsuario;
+let inputArea; // Novo input para a área
 let modalPerfil;
 let btnSalvarPerfil;
 let modalReset;
@@ -46,7 +58,10 @@ function startApp() {
   const uid = firebase.auth().currentUser.uid;
   db.collection('users').doc(uid).get()
     .then(doc => { inputUsuario.value = doc.data().nome || ''; });
+  // Inicializa as válvulas para a área e lado padrão
   initValves();
+  // Atualiza o display da área no input
+  inputArea.value = currentArea;
 }
 
 async function handleGoogle() {
@@ -79,20 +94,32 @@ async function handleGoogle() {
 }
 
 function initValves() {
-  sideTitle.textContent = `Lado ${currentSide}`;
+  sideTitle.textContent = `Lado ${currentSide} (${currentArea})`; // Atualiza título para incluir a área
+  inputArea.value = currentArea; // Atualiza o input da área
+
+  // Garante que o objeto para a área e lado exista
+  if (!votos[currentArea][currentSide]) {
+      votos[currentArea][currentSide] = {};
+  }
+  if (!confirmadas[currentArea][currentSide]) {
+      confirmadas[currentArea][currentSide] = {};
+  }
+
   const valvs = sides[currentSide];
   valvs.forEach((_, i) => {
-    if (!votos[currentSide][i]) votos[currentSide][i] = 1;
-    confirmadas[currentSide][i] = true;
+    if (!votos[currentArea][currentSide][i]) votos[currentArea][currentSide][i] = 1;
+    confirmadas[currentArea][currentSide][i] = true;
   });
   renderValves();
   bindListeners();
+  updateActiveAreaButtonValveView(); // Garante que o botão de área esteja ativo
+  updateActiveSideButtonValveView(); // Garante que o botão de lado esteja ativo
 }
 
 function renderValves() {
   container.innerHTML = '';
   sides[currentSide].forEach((nome, i) => {
-    const nota = votos[currentSide][i] || 1;
+    const nota = votos[currentArea][currentSide][i] || 1; // Acessa a nota pela área
     const div = document.createElement('div');
     div.className = 'valvula-wrapper';
     div.innerHTML = `
@@ -106,7 +133,7 @@ function renderValves() {
 }
 
 function handleVoto(index, nome) {
-  const notaAtual = votos[currentSide][index];
+  const notaAtual = votos[currentArea][currentSide][index]; // Acessa a nota pela área
   if (notaAtual !== undefined && notaAtual !== 1) {
     const deseja = confirm(`Deseja editar a nota de ${nome}?`);
     if (!deseja) return;
@@ -128,7 +155,7 @@ function mostrarPergunta(index, nome) {
     const btn = document.createElement('button');
     btn.textContent = n;
     btn.onclick = () => {
-      votos[currentSide][index] = n;
+      votos[currentArea][currentSide][index] = n; // Salva a nota pela área
       perguntaContainer.classList.remove('show');
       setTimeout(() => {
         perguntaContainer.innerHTML = '';
@@ -145,8 +172,8 @@ function mostrarPergunta(index, nome) {
 function bindListeners() {
   document.getElementById('btn-reset').onclick = () => modalReset.classList.add('show');
   btnSimReset.onclick = () => {
-    votos[currentSide] = {};
-    confirmadas[currentSide] = {};
+    votos[currentArea][currentSide] = {}; // Reseta votos da área e lado
+    confirmadas[currentArea][currentSide] = {}; // Reseta confirmações da área e lado
     modalReset.classList.remove('show');
     initValves();
   };
@@ -164,7 +191,7 @@ function bindListeners() {
     const blob = new Blob([resumoTextModal.textContent], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `resumo_Lado_${currentSide}.txt`;
+    a.download = `resumo_${currentArea}_Lado_${currentSide}.txt`; // Nome do arquivo inclui a área
     a.click();
     URL.revokeObjectURL(a.href);
   };
@@ -179,11 +206,11 @@ async function mostrarResumo() {
   const pc = inputCaixa.value.trim();
   const ts = new Date().toISOString();
 
-  let txt = `Autor: ${autor}\nLado: ${currentSide}\nData: ${ts}\nPressão Raizer: ${pr}\nPressão Caixa: ${pc}\n\n`;
+  let txt = `Autor: ${autor}\nÁrea: ${currentArea}\nLado: ${currentSide}\nData: ${ts}\nPressão Raizer: ${pr}\nPressão Caixa: ${pc}\n\n`; // Adiciona área ao resumo
   const notas = {};
 
   arr.forEach((nome, i) => {
-    const n = votos[currentSide][i] || 1;
+    const n = votos[currentArea][currentSide][i] || 1; // Pega a nota pela área
     txt += `${nome}: ${n}\n`;
     notas[nome] = n;
   });
@@ -195,6 +222,7 @@ async function mostrarResumo() {
     autor,
     data: ts,
     lado: currentSide,
+    area: currentArea, // Salva a área no Firestore
     pressaoRaizer: pr,
     pressaoCaixa: pc,
     valvulas: notas
@@ -209,12 +237,14 @@ function logout() {
 document.addEventListener('DOMContentLoaded', () => {
   // ELEMENTOS DOM - Atribua os valores aqui dentro
   sideBtns         = document.querySelectorAll('.side-btn');
+  areaBtns         = document.querySelectorAll('.area-button'); // Atribui os novos botões de área
   sideTitle        = document.getElementById('side-title');
   container        = document.getElementById('valvulas-container');
   perguntaContainer= document.getElementById('pergunta-global-container');
   inputRaizer      = document.getElementById('pressao-raizer');
   inputCaixa       = document.getElementById('pressao-caixa');
   inputUsuario     = document.getElementById('input-usuario');
+  inputArea        = document.getElementById('input-area'); // Atribui o novo input da área
   modalPerfil      = document.getElementById('modal-perfil');
   btnSalvarPerfil  = document.getElementById('btn-salvar-perfil');
   modalReset       = document.getElementById('modal-reset');
@@ -261,19 +291,25 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('to-register').onclick = e => { e.preventDefault(); showView('register-view'); };
   document.getElementById('to-login').onclick = e => { e.preventDefault(); showView('login-view'); };
 
-  // VÁLVULAS
-  sideBtns.forEach(btn => {
+  // VÁLVULAS E ÁREAS
+  document.querySelectorAll('#valve-view .sides .side-btn').forEach(btn => {
     btn.onclick = () => {
       currentSide = btn.dataset.side;
       initValves();
-      // Se houver uma função para atualizar o botão ativo na navegação de válvulas, chame-a aqui:
-      // updateActiveSideButtonValveView();
       updateActiveSideButtonValveView();
     };
   });
 
+  // Listener para os novos botões de área
+  document.querySelectorAll('#valve-view .area-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+          currentArea = btn.dataset.area;
+          initValves(); // Re-inicializa as válvulas para a nova área
+          updateActiveAreaButtonValveView(); // Atualiza o estado ativo dos botões de área
+      });
+  });
+
   // BOTÃO SEMPRE VISÍVEL
-  // Mova esta linha para cá, para garantir que 'confirmar-container' esteja disponível
   document.getElementById('confirmar-container').style.display = 'block';
 
   // Chamar bindListeners aqui

@@ -5,7 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gráfico de Sujeira</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="auth.css"> </head>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="auth.css">
+  <style>
+    /* Estilos para a statistics-view */
+    #statistics-view .sides {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    #statistics-view .valvulas-list {
+        display: grid;
+        /* Altera para 2 fileiras de 6 */
+        grid-template-columns: repeat(6, 1fr);
+        gap: 15px;
+        margin-top: 20px;
+        padding: 0 1rem;
+        /* Centraliza o grid */
+        justify-items: center;
+    }
+    /* Media query para telas menores, para quebrar a linha */
+    @media (max-width: 768px) {
+        #statistics-view .valvulas-list {
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Ajusta para telas menores */
+        }
+    }
+
+    #statistics-view .valvula-item {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%; /* Garante que o item ocupe a largura da coluna */
+        max-width: 150px; /* Limita a largura individual do item */
+    }
+    #statistics-view .valvula-item:hover {
+        background-color: #e0e0e0;
+    }
+    #statistics-view .valvula-item.selected {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    #statistics-view .chart-container {
+        margin-top: 30px;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 90%; /* Aumenta a largura do container do gráfico */
+        max-width: 900px; /* Limite máximo para o gráfico */
+        margin-left: auto; /* Centraliza */
+        margin-right: auto; /* Centraliza */
+    }
+    #statistics-view h2 {
+        text-align: center;
+        margin-top: 20px;
+        color: #333;
+    }
+    #statistics-view .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 1rem;
+        background-color: #eee;
+        border-bottom: 1px solid #ccc;
+        flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
+        gap: 10px; /* Espaçamento entre os itens da top bar */
+    }
+    #statistics-view .top-bar button,
+    #statistics-view .top-bar select {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    #statistics-view .top-bar button:hover,
+    #statistics-view .top-bar select:hover {
+        background-color: #0056b3;
+    }
+    #statistics-view .side-btn {
+        background-color: #e9ecef;
+        color: #495057;
+        border: 1px solid #ced4da;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    #statistics-view .side-btn.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    #graph-view .top-bar { /* Garante que o botão da estatística apareça corretamente aqui */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    /* Novos estilos para os botões de área */
+    .area-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .area-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #28a745; /* Cor para Raizer/Caixa */
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .area-button:hover {
+        background-color: #218838;
+    }
+    .area-button.active {
+        background-color: #196f3d;
+        border: 2px solid #145c2f;
+    }
+
+    /* Estilo para ocultar o gráfico de barras inicialmente */
+    #bar-chart-container {
+        display: none;
+    }
+  </style>
+</head>
 <body>
 
   <div id="login-view" class="view active">
@@ -38,15 +175,22 @@
   <div id="valve-view" class="view">
     <header class="valve-header">
       <button onclick="logout()">Sair</button>
-      <button onclick="showView('graph-view')">Ver Gráfico</button> </header>
+      <button onclick="showGraphOptions()">Ver Gráfico de Barras</button>
+    </header>
 
     <div id="inputs-pressao">
       <label for="input-usuario">Usuário:</label>
       <input type="text" id="input-usuario" placeholder="Seu Nome" readonly>
-      <label for="pressao-raizer">Pressão Raizer (bar):</label>
+      <label for="input-area">Área:</label>
+      <input type="text" id="input-area" placeholder="Raizer" readonly> <label for="pressao-raizer">Pressão Raizer (bar):</label>
       <input type="number" id="pressao-raizer" placeholder="Ex: 5.2" step="0.1">
       <label for="pressao-caixa">Pressão Caixa (bar):</label>
       <input type="number" id="pressao-caixa" placeholder="Ex: 3.8" step="0.1">
+    </div>
+
+    <div class="area-buttons">
+        <button class="area-button" data-area="Raizer">Ir para Raizer</button>
+        <button class="area-button" data-area="Caixa">Ir para Caixa</button>
     </div>
 
     <div class="sides">
@@ -110,24 +254,63 @@
   </div>
 
   <div id="graph-view" class="view">
-    <h1>Gráfico de Sujeira por Lado</h1>
+    <h1>Opções de Gráfico</h1>
 
     <div class="top-bar">
-      <button class="side-btn-graph" data-side-graph="A">Lado A</button>
-      <button class="side-btn-graph" data-side-graph="B">Lado B</button>
-      <button class="side-btn-graph" data-side-graph="C">Lado C</button>
-      <button class="side-btn-graph" data-side-graph="D">Lado D</button>
-      <select id="periodo-select">
-        <option value="7">Últimos 7 dias</option>
-        <option value="30">Últimos 30 dias</option>
-      </select>
+      <button onclick="showBarChart()">Ver Gráfico em Barra</button>
+      <button onclick="showView('statistics-view'); initStatisticsView();">Ver Estatísticas de Válvulas</button>
       <button onclick="showView('valve-view')">🔙 Voltar para válvulas</button>
-      <button onclick="baixarGrafico()">⬇️ Baixar Gráfico</button>
     </div>
 
-    <canvas id="grafico-valvulas"></canvas>
+    <div id="bar-chart-container">
+        <h2>Gráfico de Sujeira por Lado</h2>
+        <div class="top-bar">
+            <button class="side-btn-graph" data-side-graph="A">Lado A</button>
+            <button class="side-btn-graph" data-side-graph="B">Lado B</button>
+            <button class="side-btn-graph" data-side-graph="C">Lado C</button>
+            <button class="side-btn-graph" data-side-graph="D">Lado D</button>
+            <select id="periodo-select">
+                <option value="7">Últimos 7 dias</option>
+                <option value="30">Últimos 30 dias</option>
+            </select>
+            <button onclick="baixarGrafico()">⬇️ Baixar Gráfico</button>
+        </div>
+        <canvas id="grafico-valvulas"></canvas>
+    </div>
   </div>
 
+  <div id="statistics-view" class="view">
+    <div class="top-bar">
+        <button onclick="showView('valve-view')">🔙 Voltar para válvulas</button>
+        <h2>Estatísticas de Válvulas</h2>
+        <select id="statistics-periodo-select"> <option value="7">Últimos 7 dias</option>
+            <option value="30">Últimos 30 dias</option>
+            <option value="all">Todo Período</option> </select>
+        <button onclick="baixarStatisticsGrafico()">⬇️ Baixar Gráfico</button>
+    </div>
+
+    <div class="area-buttons">
+        <button class="area-button" data-area="Raizer">Raizer</button>
+        <button class="area-button" data-area="Caixa">Caixa</button>
+    </div>
+
+    <div class="sides">
+        <strong>Lado:</strong>
+        <button class="side-btn" data-side="A">A</button>
+        <button class="side-btn" data-side="B">B</button>
+        <button class="side-btn" data-side="C">C</button>
+        <button class="side-btn" data-side="D">D</button>
+    </div>
+
+    <h2 id="statistics-side-title">Selecione uma Válvula do Lado A</h2>
+
+    <div class="valvulas-list" id="valvulas-statistics-container">
+        </div>
+
+    <div class="chart-container">
+        <canvas id="grafico-sujeira-valvula"></canvas>
+    </div>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -136,7 +319,7 @@
 
   <script src="auth.js"></script>
   <script src="script.js"></script>
-  <script>
+  <script src="statistics.js"></script> <script>
     // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAJ1_vq5j-Aa6JOXEvUYMxr10lTuCfdTMQ",
@@ -149,24 +332,35 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Variáveis e funções relacionadas ao Chart.js
+    // Variáveis e funções relacionadas ao Chart.js (Gráfico de Barras)
     let ladoAtualGrafico = 'A';
+    // Adicionado variável para a área do gráfico de barras
+    let areaAtualGrafico = 'Raizer';
+
     const ctx = document.getElementById('grafico-valvulas').getContext('2d');
     let grafico = null;
 
     function formatarData(iso) {
       const d = new Date(iso);
-      return d.toLocaleDateString();
+      // Para exibir a data no formato DD/MM/AAAA
+      const dia = String(d.getDate()).padStart(2, '0');
+      const mes = String(d.getMonth() + 1).padStart(2, '0'); // Mês começa do 0
+      const ano = d.getFullYear();
+      return `${dia}/${mes}/${ano}`;
     }
 
     async function gerarGrafico() {
       const dias = parseInt(document.getElementById('periodo-select').value);
       const agora = new Date();
-      const limite = new Date(agora.getTime() - dias * 86400000).toISOString();
+      // Ajuste para garantir que o limite de data inclua o dia atual
+      const limite = new Date(agora.getTime() - dias * 86400000);
+      limite.setHours(0, 0, 0, 0); // Zera a hora para pegar desde o início do dia
+      const limiteISO = limite.toISOString();
 
       const snapshot = await db.collection('registros')
-        .where('data', '>=', limite)
+        .where('data', '>=', limiteISO)
         .where('lado', '==', ladoAtualGrafico)
+        .where('area', '==', areaAtualGrafico) // Adicionado filtro por área
         .get();
 
       const ocorrencias = {};
@@ -184,7 +378,7 @@
 
       const labels = Object.keys(ocorrencias).sort();
       const dados = labels.map(label => ocorrencias[label].length);
-      const tooltips = labels.map(label => ocorrencias[label].join("\\n"));
+      const tooltips = labels.map(label => ocorrencias[label].join("\n")); // Use \n para quebra de linha
 
       if (grafico) grafico.destroy();
 
@@ -193,7 +387,7 @@
         data: {
           labels: labels.length ? labels : ['Nenhum dado'],
           datasets: [{
-            label: `Notas 4 ou 5 - Lado ${ladoAtualGrafico}`,
+            label: `Notas 4 ou 5 - ${areaAtualGrafico} - Lado ${ladoAtualGrafico}`,
             data: labels.length ? dados : [0],
             backgroundColor: '#ff4d4d'
           }]
@@ -207,17 +401,47 @@
                   const idx = context.dataIndex;
                   return tooltips[idx] || 'Sem detalhes';
                 }
+              },
+              // Permite quebra de linha nos tooltips
+              bodyFont: {
+                size: 14
+              },
+              footerFont: {
+                size: 14
+              },
+              titleFont: {
+                size: 14
               }
             },
             title: {
               display: true,
-              text: `Válvulas mais sujas (notas 4 ou 5) - Lado ${ladoAtualGrafico} (${dias} dias)`
+              text: `Válvulas mais sujas (notas 4 ou 5) - ${areaAtualGrafico} - Lado ${ladoAtualGrafico} (${dias} dias)`,
+              font: {
+                size: 18
+              }
             },
             legend: { display: false }
           },
           scales: {
-            x: { title: { display: true, text: 'Válvula' } },
-            y: { title: { display: true, text: 'Ocorrências' }, beginAtZero: true }
+            x: {
+              title: {
+                display: true,
+                text: 'Válvula',
+                font: {
+                  size: 16
+                }
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Ocorrências',
+                font: {
+                  size: 16
+                }
+              },
+              beginAtZero: true
+            }
           }
         }
       });
@@ -225,7 +449,7 @@
 
     // Função para gerenciar o estado ativo dos botões de lado (visualização de válvulas)
     function updateActiveSideButtonValveView() {
-      document.querySelectorAll('.sides .side-btn').forEach(btn => {
+      document.querySelectorAll('#valve-view .sides .side-btn').forEach(btn => {
         if (btn.dataset.side === currentSide) {
           btn.classList.add('active');
         } else {
@@ -234,7 +458,21 @@
       });
     }
 
-    // Função para gerenciar o estado ativo dos botões de lado (visualização de gráfico)
+    // Função para gerenciar o estado ativo dos botões de área (visualização de válvulas)
+    function updateActiveAreaButtonValveView() {
+      document.querySelectorAll('#valve-view .area-button').forEach(btn => {
+        if (btn.dataset.area === currentArea) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      // Atualiza o campo de input da área
+      document.getElementById('input-area').value = currentArea;
+    }
+
+
+    // Função para gerenciar o estado ativo dos botões de lado (visualização de gráfico de barras)
     function updateActiveSideButtonGraphView() {
       document.querySelectorAll('#graph-view .top-bar .side-btn-graph').forEach(btn => {
         if (btn.dataset.sideGraph === ladoAtualGrafico) {
@@ -245,22 +483,58 @@
       });
     }
 
-    // Função para selecionar o lado no gráfico e gerar o gráfico
+    // Função para gerenciar o estado ativo dos botões de área (visualização de gráfico de barras)
+    function updateActiveAreaButtonGraphView() {
+        // Atualmente não temos botões de área dedicados na graph-view,
+        // mas se for adicionado no futuro, esta função seria usada.
+        // Para o gráfico de barras, a área é implicitamente definida por `areaAtualGrafico`.
+        // Se houver botões de área para o gráfico de barras, descomente e adapte.
+    }
+
+
+    // Função para selecionar o lado no gráfico de barras e gerar o gráfico
     function selecionarLadoGrafico(lado) {
       ladoAtualGrafico = lado;
       updateActiveSideButtonGraphView(); // Atualiza a classe ativa para os botões de lado do gráfico
       gerarGrafico();
     }
 
+    // Função para selecionar a área no gráfico de barras e gerar o gráfico
+    function selecionarAreaGrafico(area) {
+        areaAtualGrafico = area;
+        // Não há botões de área para atualizar na graph-view como nos lados,
+        // então apenas chama gerarGrafico.
+        gerarGrafico();
+    }
+
+
     function baixarGrafico() {
       const link = document.createElement('a');
-      link.download = `grafico_valvulas_${ladoAtualGrafico}.png`;
+      link.download = `grafico_valvulas_barras_${areaAtualGrafico}_${ladoAtualGrafico}.png`;
       link.href = document.getElementById('grafico-valvulas').toDataURL('image/png');
       link.click();
     }
 
+    function baixarStatisticsGrafico() {
+      const link = document.createElement('a');
+      link.download = `grafico_estatisticas_${currentStatisticsArea}_${currentStatisticsSide}_${currentSelectedValve}.png`;
+      link.href = document.getElementById('grafico-sujeira-valvula').toDataURL('image/png');
+      link.click();
+    }
+
+    function showGraphOptions() {
+        showView('graph-view');
+        document.getElementById('bar-chart-container').style.display = 'none'; // Hide bar chart initially
+    }
+
+    function showBarChart() {
+        document.getElementById('bar-chart-container').style.display = 'block'; // Show bar chart
+        selecionarLadoGrafico('A'); // Load default side A chart
+    }
+
+
     // Adiciona listener para os botões de lado da visualização de válvulas
-    document.querySelectorAll('.sides .side-btn').forEach(btn => {
+    document.querySelectorAll('#valve-view .sides .side-btn').forEach(btn => {
       btn.onclick = () => {
         currentSide = btn.dataset.side;
         initValves();
@@ -268,14 +542,25 @@
       };
     });
 
+    // Adiciona listener para os botões de área da visualização de válvulas
+    document.querySelectorAll('#valve-view .area-button').forEach(btn => {
+        btn.onclick = () => {
+            currentArea = btn.dataset.area;
+            initValves(); // Re-inicializa as válvulas para a nova área
+            updateActiveAreaButtonValveView(); // Atualiza a classe ativa para os botões de área
+        };
+    });
+
+
     // Inicializa a visualização do gráfico quando o app carrega, se o usuário já estiver logado
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
             startApp(); // De script.js, mostra valve-view
             // Inicializa o botão de lado ativo para a visualização de válvulas
             updateActiveSideButtonValveView();
-            // Inicializa os dados do gráfico para o lado A e define o botão ativo
-            selecionarLadoGrafico('A');
+            // Inicializa o botão de área ativo para a visualização de válvulas
+            updateActiveAreaButtonValveView();
+            // Do not call seleccionarLadoGrafico('A') here, it will be called when 'Ver Gráfico em Barra' is clicked
         } else {
             showView('login-view');
         }
@@ -283,8 +568,8 @@
 
     document.getElementById('periodo-select').addEventListener('change', gerarGrafico);
 
-    // Adiciona listeners para os botões de lado do gráfico
-    document.querySelectorAll('.side-btn-graph').forEach(btn => {
+    // Adiciona listeners para os botões de lado do gráfico de barras
+    document.querySelectorAll('#graph-view .side-btn-graph').forEach(btn => {
         btn.addEventListener('click', () => {
             selecionarLadoGrafico(btn.dataset.sideGraph);
         });
