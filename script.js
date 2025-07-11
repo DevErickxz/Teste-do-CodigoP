@@ -1,6 +1,6 @@
 // script.js
 
-// CONFIG INICIAL (estas variáveis podem permanecer fora do listener)
+// CONFIG INICIAL
 const allValves = Array.from({ length: 48 }, (_, i) => `Válvula ${i + 1}`);
 const sides = {
   A: allValves.slice(0, 12),
@@ -8,62 +8,64 @@ const sides = {
   C: allValves.slice(24, 36),
   D: allValves.slice(36, 48)
 };
-let currentSide = 'A';
-let currentArea = 'Raizer'; // Nova variável global para a área atual
 
-// Votos e confirmações agora são aninhados por área e lado
+let currentSide = 'A';
+let currentArea = 'Caixa'; // Área atual
+
+// Votos e confirmações aninhados por área e lado
 const votos = {
-    'Raizer': { A: {}, B: {}, C: {}, D: {} },
-    'Caixa': { A: {}, B: {}, C: {}, D: {} }
+  'Raizer': { A: {}, B: {}, C: {}, D: {} },
+  'Caixa':  { A: {}, B: {}, C: {}, D: {} }
 };
 const confirmadas = {
-    'Raizer': { A: {}, B: {}, C: {}, D: {} },
-    'Caixa': { A: {}, B: {}, C: {}, D: {} }
+  'Raizer': { A: {}, B: {}, C: {}, D: {} },
+  'Caixa':  { A: {}, B: {}, C: {}, D: {} }
 };
 
-let valvulaAberta = null;
+// Mapeamento de quantidades por área e lado
+const countsByArea = {
+  'Raizer': { A: 13, B: 3,  C: 12, D: 5  },
+  'Caixa':  { A: 4,  B: 8,  C: 3,  D: 3  }
+};
 
-// Declare as variáveis que conterão os elementos DOM.
-// Elas devem ser declaradas com 'let' para que possam ser atribuídas posteriormente.
-let sideBtns;
-let areaBtns; // Nova variável para os botões de área
-let sideTitle;
-let container;
-let perguntaContainer;
-let inputRaizer;
-let inputCaixa;
-let inputUsuario;
-let inputArea; // Novo input para a área
-let modalPerfil;
-let btnSalvarPerfil;
-let modalReset;
-let btnSimReset;
-let btnNaoReset;
-let modalConfirmar;
-let btnSimConfirmar;
-let btnNaoConfirmar;
-let modalResumo;
-let resumoTextModal;
-let btnFecharResumo;
-let btnDownload;
+// Quais índices devem ficar quadrados (0‑based) por área→lado
+const squareIndices = {
+  'Raizer': {
+    C: [1],
+    D: [2]  // Apenas a Válvula 11 (índice 10) de Raizer C
+  },
+  'Caixa': {
+    // AGORA, 'A' e 'B' estão juntos dentro da mesma chave 'Caixa'
+    B: [0, 5], // Válvula 5 (índice 4) e Válvula 10 (índice 9) de Caixa B
+    A: [2]    // Válvula 3 (índice 2) de Caixa A
+  }
+};
 
-// Helper (funções auxiliares)
+
+// Referências DOM
+let sideBtns, areaBtns, sideTitle, container, perguntaContainer;
+let inputRaizer, inputCaixa, inputUsuario, inputArea;
+let modalPerfil, btnSalvarPerfil, modalReset, btnSimReset, btnNaoReset;
+let modalConfirmar, btnSimConfirmar, btnNaoConfirmar;
+let modalResumo, resumoTextModal, btnFecharResumo, btnDownload;
+
+// Mostra apenas a view selecionada
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
+// Inicia o app após login
 function startApp() {
   showView('valve-view');
   const uid = firebase.auth().currentUser.uid;
   db.collection('users').doc(uid).get()
-    .then(doc => { inputUsuario.value = doc.data().nome || ''; });
-  // Inicializa as válvulas para a área e lado padrão
+    .then(doc => inputUsuario.value = doc.data().nome || '');
   initValves();
-  // Atualiza o display da área no input
   inputArea.value = currentArea;
 }
 
+// Login via Google
 async function handleGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   try {
@@ -75,13 +77,8 @@ async function handleGoogle() {
       modalPerfil.classList.add('show');
       btnSalvarPerfil.onclick = async () => {
         const nome = document.getElementById('perfil-nome').value.trim();
-        const senhaCustom = document.getElementById('perfil-senha').value;
         if (!nome) { alert('Informe seu nome completo.'); return; }
         await ref.set({ email: user.email, nome });
-        if (senhaCustom) {
-          const credEmail = firebase.auth.EmailAuthProvider.credential(user.email, senhaCustom);
-          await user.linkWithCredential(credEmail);
-        }
         modalPerfil.classList.remove('show');
         startApp();
       };
@@ -93,87 +90,97 @@ async function handleGoogle() {
   }
 }
 
+// Inicializa as válvulas para área/lado atuais
 function initValves() {
-  sideTitle.textContent = `Lado ${currentSide} (${currentArea})`; // Atualiza título para incluir a área
-  inputArea.value = currentArea; // Atualiza o input da área
+  sideTitle.textContent = `Lado ${currentSide} (${currentArea})`;
+  inputArea.value = currentArea;
 
-  // Garante que o objeto para a área e lado exista
-  if (!votos[currentArea][currentSide]) {
-      votos[currentArea][currentSide] = {};
-  }
-  if (!confirmadas[currentArea][currentSide]) {
-      confirmadas[currentArea][currentSide] = {};
-  }
+  if (!votos[currentArea][currentSide]) votos[currentArea][currentSide] = {};
+  if (!confirmadas[currentArea][currentSide]) confirmadas[currentArea][currentSide] = {};
 
-  const valvs = sides[currentSide];
-  valvs.forEach((_, i) => {
+  // Preenche votos padrão = 1
+  const count = countsByArea[currentArea][currentSide];
+  for (let i = 0; i < count; i++) {
     if (!votos[currentArea][currentSide][i]) votos[currentArea][currentSide][i] = 1;
     confirmadas[currentArea][currentSide][i] = true;
-  });
+  }
+
   renderValves();
   bindListeners();
-  updateActiveAreaButtonValveView(); // Garante que o botão de área esteja ativo
-  updateActiveSideButtonValveView(); // Garante que o botão de lado esteja ativo
+  updateActiveAreaButtonValveView();
+  updateActiveSideButtonValveView();
 }
 
+// Renderiza as válvulas dinamicamente
 function renderValves() {
   container.innerHTML = '';
-  sides[currentSide].forEach((nome, i) => {
-    const nota = votos[currentArea][currentSide][i] || 1; // Acessa a nota pela área
-    const div = document.createElement('div');
-    div.className = 'valvula-wrapper';
-    div.innerHTML = `
-      <div class="valvula nota-${nota}">
+
+  // Calcular slice de allValves baseado em countsByArea
+  const counts  = countsByArea[currentArea];
+  const offsets = {
+    A: 0,
+    B: counts.A,
+    C: counts.A + counts.B,
+    D: counts.A + counts.B + counts.C
+  };
+  const start = offsets[currentSide];
+  const num   = counts[currentSide];
+  const valvs = allValves.slice(start, start + num);
+
+  valvs.forEach((nome, i) => {
+    const nota     = votos[currentArea][currentSide][i] || 1;
+    const sqIdxs   = squareIndices[currentArea]?.[currentSide] || [];
+    const isSquare = sqIdxs.includes(i);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'valvula-wrapper';
+    wrapper.innerHTML = `
+      <div class="valvula nota-${nota}${isSquare ? ' square' : ''}">
         <div class="valvula-label">${nome}</div>
         <div class="nota-label">Nota: ${nota}</div>
       </div>`;
-    div.onclick = () => handleVoto(i, nome);
-    container.appendChild(div);
+    wrapper.onclick = () => handleVoto(i, nome);
+    container.appendChild(wrapper);
   });
 }
 
+// Lógica de voto com confirmação de edição
 function handleVoto(index, nome) {
-  const notaAtual = votos[currentArea][currentSide][index]; // Acessa a nota pela área
-  if (notaAtual !== undefined && notaAtual !== 1) {
-    const deseja = confirm(`Deseja editar a nota de ${nome}?`);
-    if (!deseja) return;
+  const atual = votos[currentArea][currentSide][index];
+  if (atual !== undefined && atual !== 1) {
+    if (!confirm(`Deseja editar a nota de ${nome}?`)) return;
   }
   mostrarPergunta(index, nome);
 }
 
+// Exibe modal de escolha de nota
 function mostrarPergunta(index, nome) {
   perguntaContainer.innerHTML = '';
   perguntaContainer.classList.add('show');
   const box = document.createElement('div');
   box.className = 'pergunta-container';
-  const p = document.createElement('div');
-  p.className = 'pergunta';
-  p.textContent = `Qual nota (1 a 5) para ${nome}?`;
-  const resp = document.createElement('div');
-  resp.className = 'respostas';
-  [1, 2, 3, 4, 5].forEach(n => {
-    const btn = document.createElement('button');
-    btn.textContent = n;
+  box.innerHTML = `
+    <div class="pergunta">Qual nota (1 a 5) para ${nome}?</div>
+    <div class="respostas">
+      ${[1,2,3,4,5].map(n => `<button>${n}</button>`).join('')}
+    </div>`;
+  // Listener para cada botão
+  box.querySelectorAll('.respostas button').forEach((btn, idx) => {
     btn.onclick = () => {
-      votos[currentArea][currentSide][index] = n; // Salva a nota pela área
+      votos[currentArea][currentSide][index] = idx + 1;
       perguntaContainer.classList.remove('show');
-      setTimeout(() => {
-        perguntaContainer.innerHTML = '';
-        renderValves();
-      }, 300);
+      setTimeout(() => { perguntaContainer.innerHTML = ''; renderValves(); }, 300);
     };
-    resp.appendChild(btn);
   });
-  box.appendChild(p);
-  box.appendChild(resp);
   perguntaContainer.appendChild(box);
 }
 
+// Bind de botões de reset, confirmar, download, etc.
 function bindListeners() {
   document.getElementById('btn-reset').onclick = () => modalReset.classList.add('show');
   btnSimReset.onclick = () => {
-    votos[currentArea][currentSide] = {}; // Reseta votos da área e lado
-    confirmadas[currentArea][currentSide] = {}; // Reseta confirmações da área e lado
+    votos[currentArea][currentSide] = {};
+    confirmadas[currentArea][currentSide] = {};
     modalReset.classList.remove('show');
     initValves();
   };
@@ -191,127 +198,151 @@ function bindListeners() {
     const blob = new Blob([resumoTextModal.textContent], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `resumo_${currentArea}_Lado_${currentSide}.txt`; // Nome do arquivo inclui a área
+    a.download = `resumo_valvulas_${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(a.href);
+    document.body.removeChild(a);
   };
 }
 
+// Gera e salva o resumo no Firestore
 async function mostrarResumo() {
-  const arr = sides[currentSide];
   const user = firebase.auth().currentUser;
-  const doc = await db.collection('users').doc(user.uid).get();
-  const autor = doc.data().nome || user.email;
-  const pr = inputRaizer.value.trim();
-  const pc = inputCaixa.value.trim();
-  const ts = new Date().toISOString();
+  const pressaoRaizer = inputRaizer.value;
+  const pressaoCaixa = inputCaixa.value;
+  const timestamp = new Date().toISOString();
+  const userDoc = await db.collection('users').doc(user.uid).get();
+  const userName = userDoc.data()?.nome || 'Desconhecido';
 
-  let txt = `Autor: ${autor}\nÁrea: ${currentArea}\nLado: ${currentSide}\nData: ${ts}\nPressão Raizer: ${pr}\nPressão Caixa: ${pc}\n\n`; // Adiciona área ao resumo
-  const notas = {};
+  let resumoContent = `Registro de Válvulas\nUsuário: ${userName}\n` +
+    `Data/Hora: ${new Date(timestamp).toLocaleString()}\n` +
+    `Área: ${currentArea}\nLado: ${currentSide}\n` +
+    `Pressão Raizer: ${pressaoRaizer || 'Não informada'}\n` +
+    `Pressão Caixa: ${pressaoCaixa || 'Não informada'}\n\n`;
 
-  arr.forEach((nome, i) => {
-    const n = votos[currentArea][currentSide][i] || 1; // Pega a nota pela área
-    txt += `${nome}: ${n}\n`;
-    notas[nome] = n;
-  });
-
-  resumoTextModal.textContent = txt;
-  modalResumo.classList.add('show');
-
-  await db.collection('registros').add({
-    autor,
-    data: ts,
+  const registroData = {
+    userId: user.uid,
+    userName,
+    data: timestamp,
+    area: currentArea,
     lado: currentSide,
-    area: currentArea, // Salva a área no Firestore
-    pressaoRaizer: pr,
-    pressaoCaixa: pc,
-    valvulas: notas
-  });
+    pressaoRaizer: pressaoRaizer || null,
+    pressaoCaixa: pressaoCaixa || null,
+    valvulas: {}
+  };
+
+  // Prepara dados por válvula
+  const count = countsByArea[currentArea][currentSide];
+  const start = (() => {
+    const counts = countsByArea[currentArea];
+    const offs = { A:0, B:counts.A, C:counts.A+counts.B, D:counts.A+counts.B+counts.C };
+    return offs[currentSide];
+  })();
+
+  for (let i = 0; i < count; i++) {
+    const nome = allValves[start + i];
+    const nota = votos[currentArea][currentSide][i] || 1;
+    resumoContent += `${nome}: Nota ${nota}\n`;
+    registroData.valvulas[nome] = nota;
+  }
+
+  try {
+    await db.collection('registros').add(registroData);
+    alert('Registro salvo com sucesso!');
+    resumoTextModal.textContent = resumoContent;
+    modalResumo.classList.add('show');
+  } catch (error) {
+    console.error('Erro ao salvar registro:', error);
+    alert('Erro ao salvar registro: ' + error.message);
+  }
 }
 
-function logout() {
-  firebase.auth().signOut().then(() => location.reload());
+// Atualiza highlight dos botões de área e lado
+function updateActiveAreaButtonValveView() {
+  areaBtns.forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.area === currentArea)
+  );
+}
+function updateActiveSideButtonValveView() {
+  sideBtns.forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.side === currentSide)
+  );
 }
 
-// Início do listener DOMContentLoaded
+// Evento inicial
 document.addEventListener('DOMContentLoaded', () => {
-  // ELEMENTOS DOM - Atribua os valores aqui dentro
-  sideBtns         = document.querySelectorAll('.side-btn');
-  areaBtns         = document.querySelectorAll('.area-button'); // Atribui os novos botões de área
-  sideTitle        = document.getElementById('side-title');
-  container        = document.getElementById('valvulas-container');
-  perguntaContainer= document.getElementById('pergunta-global-container');
-  inputRaizer      = document.getElementById('pressao-raizer');
-  inputCaixa       = document.getElementById('pressao-caixa');
-  inputUsuario     = document.getElementById('input-usuario');
-  inputArea        = document.getElementById('input-area'); // Atribui o novo input da área
-  modalPerfil      = document.getElementById('modal-perfil');
-  btnSalvarPerfil  = document.getElementById('btn-salvar-perfil');
-  modalReset       = document.getElementById('modal-reset');
-  btnSimReset      = document.getElementById('btn-sim-resetar');
-  btnNaoReset      = document.getElementById('btn-nao-resetar');
-  modalConfirmar   = document.getElementById('modal-confirmacao-geral');
-  btnSimConfirmar  = document.getElementById('btn-sim-confirmar');
-  btnNaoConfirmar  = document.getElementById('btn-nao-confirmar');
-  modalResumo      = document.getElementById('modal-confirmacao');
-  resumoTextModal  = document.getElementById('resumo-text-modal');
-  btnFecharResumo  = document.getElementById('btn-fechar-modal');
-  btnDownload      = document.getElementById('btn-download-modal');
+  // Referências
+  sideBtns          = document.querySelectorAll('#valve-view .side-btn');
+  areaBtns          = document.querySelectorAll('#valve-view .area-button');
+  sideTitle         = document.getElementById('side-title');
+  container         = document.getElementById('valvulas-container');
+  perguntaContainer = document.getElementById('pergunta-global-container');
+  inputRaizer       = document.getElementById('pressao-raizer');
+  inputCaixa        = document.getElementById('pressao-caixa');
+  inputUsuario      = document.getElementById('input-usuario');
+  inputArea         = document.getElementById('input-area');
+  modalPerfil       = document.getElementById('modal-perfil');
+  btnSalvarPerfil   = document.getElementById('btn-salvar-perfil');
+  modalReset        = document.getElementById('modal-reset');
+  btnSimReset       = document.getElementById('btn-sim-resetar');
+  btnNaoReset       = document.getElementById('btn-nao-resetar');
+  modalConfirmar    = document.getElementById('modal-confirmacao-geral');
+  btnSimConfirmar   = document.getElementById('btn-sim-confirmar');
+  btnNaoConfirmar   = document.getElementById('btn-nao-confirmar');
+  modalResumo       = document.getElementById('modal-confirmacao');
+  resumoTextModal   = document.getElementById('resumo-text-modal');
+  btnFecharResumo   = document.getElementById('btn-fechar-modal');
+  btnDownload       = document.getElementById('btn-download-modal');
 
-  // AUTENTICAÇÃO
+  // Login/Cadastro
   document.getElementById('login-form').onsubmit = async e => {
     e.preventDefault();
     try {
-      const email = document.getElementById('login-username').value.trim();
-      const pwd = document.getElementById('login-password').value;
-      await firebase.auth().signInWithEmailAndPassword(email, pwd);
+      await loginUser(
+        document.getElementById('login-username').value,
+        document.getElementById('login-password').value
+      );
       startApp();
-    } catch {
-      alert('E‑mail ou senha inválidos.');
+    } catch (err) {
+      alert('Erro no login: ' + err.message);
     }
   };
-
+  document.getElementById('to-register').onclick = () => showView('register-view');
   document.getElementById('register-form').onsubmit = async e => {
     e.preventDefault();
     try {
-      const nome = document.getElementById('reg-nome').value.trim();
-      const email = document.getElementById('reg-username').value.trim();
-      const pwd = document.getElementById('reg-password').value;
-      if (!nome) { alert('Informe seu nome completo.'); return; }
-      const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
-      await db.collection('users').doc(cred.user.uid).set({ email, nome });
-      startApp();
+      await registerUser(
+        document.getElementById('reg-username').value,
+        document.getElementById('reg-password').value
+      );
+      showView('login-view');
     } catch (err) {
-      alert(err.message);
+      alert('Erro no cadastro: ' + err.message);
     }
   };
-
+  document.getElementById('to-login').onclick = () => showView('login-view');
   document.getElementById('btn-google').onclick = handleGoogle;
   document.getElementById('btn-google-register').onclick = handleGoogle;
-  document.getElementById('to-register').onclick = e => { e.preventDefault(); showView('register-view'); };
-  document.getElementById('to-login').onclick = e => { e.preventDefault(); showView('login-view'); };
 
-  // VÁLVULAS E ÁREAS
-  document.querySelectorAll('#valve-view .sides .side-btn').forEach(btn => {
-    btn.onclick = () => {
-      currentSide = btn.dataset.side;
-      initValves();
-      updateActiveSideButtonValveView();
-    };
+  // Botões área/ lado (view válvulas)
+  areaBtns.forEach(btn => btn.onclick = () => {
+    currentArea = btn.dataset.area;
+    initValves();
   });
-
-  // Listener para os novos botões de área
-  document.querySelectorAll('#valve-view .area-button').forEach(btn => {
-      btn.addEventListener('click', () => {
-          currentArea = btn.dataset.area;
-          initValves(); // Re-inicializa as válvulas para a nova área
-          updateActiveAreaButtonValveView(); // Atualiza o estado ativo dos botões de área
-      });
+  sideBtns.forEach(btn => btn.onclick = () => {
+    currentSide = btn.dataset.side;
+    initValves();
   });
-
-  // BOTÃO SEMPRE VISÍVEL
-  document.getElementById('confirmar-container').style.display = 'block';
-
-  // Chamar bindListeners aqui
-  bindListeners();
 });
+
+function preencherSelectValvulas() {
+  const select = document.getElementById('search-valve');
+  for (let i = 1; i <= 48; i++) {
+    const opt = document.createElement('option');
+    opt.value = `Válvula ${i}`;
+    opt.textContent = `Válvula ${i}`;
+    select.appendChild(opt);
+  }
+}
+document.addEventListener('DOMContentLoaded', preencherSelectValvulas);
+

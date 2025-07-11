@@ -266,6 +266,11 @@ form button:hover {
   word-break: break-word;
   padding: 0.5em;
 }
+/* Válvula quadrada */
+.valvula.square {
+  border-radius: 8px; /* retira o círculo */
+}
+
 .valvula:hover {
   box-shadow: 0 16px 48px rgba(37,117,252,0.18);
   transform: scale(1.08);
@@ -599,4 +604,208 @@ canvas#grafico-valvulas {
 .navegacao button.active {
   background: #000; /* Cor preta */
   /* Você pode adicionar outros estilos para o estado ativo, se quiser */
+}
+
+
+#search-graph-view {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Poppins', sans-serif;
+}
+
+#search-graph-view h1 {
+  font-size: 1.8rem;
+  text-align: center;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+/* Filtros de busca */
+.search-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.search-filters label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.95rem;
+  width: 100%;
+  text-align: center;
+}
+
+.search-filters input,
+.search-filters select {
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  min-width: 160px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.search-filters input:focus,
+.search-filters select:focus {
+  border-color: #007bff;
+}
+
+.search-filters button {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.search-filters button:hover {
+  background: linear-gradient(90deg, #0056b3, #007bff);
+}
+
+/* Container do gráfico */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+#search-chart-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .search-filters {
+    flex-direction: column;
+    align-items: center;
+  }
+  .search-filters label {
+    text-align: center;
+  }
+}
+
+#inputs-pressao {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+#inputs-pressao .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+#inputs-pressao label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+#inputs-pressao input {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #f9f9f9;
+  outline: none;
+}
+
+#inputs-pressao input:focus {
+  border-color: #007bff;
+  background: #fff;
+}
+
+/* Estiliza a área de seleção lateral e botões */
+.area-buttons,
+.sides {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.area-button {
+  background-color: #198754;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.area-button:hover {
+  background-color: #157347;
+}
+
+.side-btn {
+  background-color: #dee2e6;
+  color: #212529;
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.side-btn.active {
+  background-color: #000;
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  #inputs-pressao {
+    grid-template-columns: 1fr;
+  }
+}
+
+canvas#search-chart-canvas {
+  position: relative;
+}
+
+canvas#search-chart-canvas::after {
+  content: attr(data-empty-msg);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 1.2rem;
+  display: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+canvas[data-empty="true"]::after {
+  display: block;
 }

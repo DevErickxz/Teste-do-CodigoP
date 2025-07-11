@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imagem Detalhada da Área</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .image-display {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 95%; /* Para telas menores */
+        }
+        .image-container { /* Novo contêiner para múltiplas imagens */
+            display: flex;
+            flex-wrap: wrap; /* Permite que as imagens quebrem para a próxima linha */
+            justify-content: center;
+            gap: 20px; /* Espaçamento entre as imagens */
+            margin: 20px auto;
+        }
+        .displayedImage { /* Alterado para classe para múltiplos elementos */
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #backButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #6c757d; /* Cinza para botão de voltar */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #backButton:hover {
+            background-color: #5a6268;
+        }
+        h1 {
+            color: #333;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="image-display">
+        <h1 id="imageTitle">Carregando Imagem...</h1>
+        <div id="imageContainer" class="image-container">
+            </div>
+        <button id="backButton">Voltar para as Válvulas</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageContainer = document.getElementById('imageContainer'); // Referência ao novo contêiner
+            const imageTitle = document.getElementById('imageTitle');
+            const backButton = document.getElementById('backButton');
+
+            // Mapeamento das imagens por Área e Lado
+            const imagePaths = {
+                'Caixa': {
+                    'A': ['img/Caixa-ladoA.png'],
+                    'B': ['img/Caixa-ladoB1.png', 'img/Caixa-ladoB2.png'], // Array para múltiplas imagens
+                    'C': ['img/Caixa-ladoC.png'],
+                    'D': ['img/Caixa-ladoD.png'],
+                },
+                'Raizer': {
+                    'A': ['img/Raizer-ladoA.png'],
+                    'B': ['img/Raizer-ladoB.png'],
+                    'C': ['img/Raizer-ladoC.png'],
+                    'D': ['img/Raizer-ladoD.png'],
+                }
+            };
+
+            // Função para obter parâmetros da URL
+            function getUrlParams() {
+                const params = {};
+                window.location.search.substring(1).split('&').forEach(param => {
+                    const [key, value] = param.split('=');
+                    params[key] = decodeURIComponent(value);
+                });
+                return params;
+            }
+
+            const urlParams = getUrlParams();
+            const area = urlParams.area;
+            const side = urlParams.side;
+
+            if (area && side) {
+                const imagesToDisplay = imagePaths[area]?.[side]; // Isso agora pode ser um array
+
+                if (imagesToDisplay && imagesToDisplay.length > 0) {
+                    imageTitle.textContent = `Imagem: ${area.charAt(0).toUpperCase() + area.slice(1)} - Lado ${side}`;
+                    imageContainer.innerHTML = ''; // Limpa qualquer conteúdo pré-existente
+
+                    imagesToDisplay.forEach(imageSrc => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imageSrc;
+                        imgElement.alt = `Imagem da Área e Lado`;
+                        imgElement.classList.add('displayedImage'); // Adiciona a classe para estilização
+                        imageContainer.appendChild(imgElement);
+                    });
+
+                } else {
+                    imageTitle.textContent = `Erro: Imagem não encontrada para ${area} - Lado ${side}.`;
+                    console.error(`Nenhuma imagem mapeada para ${area} - Lado ${side} ou caminho incorreto.`);
+                }
+            } else {
+                imageTitle.textContent = "Erro: Parâmetros de área e lado não encontrados na URL.";
+            }
+
+            // Listener para o botão de voltar
+            backButton.addEventListener('click', function() {
+                window.history.back();
+            });
+        });
+    </script>
+</body>
+</html>
