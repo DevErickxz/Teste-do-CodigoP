@@ -25,7 +25,8 @@ async function initStatisticsView() {
 async function renderStatisticsValves() {
   const container = document.getElementById('valvulas-statistics-container');
   container.innerHTML = '';
-  const valvesForSide = sides[currentStatisticsSide];
+  const valvesForSide = getValvesList(currentStatisticsArea, currentStatisticsSide);
+
 
   document.getElementById('statistics-side-title').textContent =
     `Selecione uma Válvula do Lado ${currentStatisticsSide} (${currentStatisticsArea})`;
@@ -165,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentStatisticsSide = btn.dataset.side;
       currentSelectedValve = null;
       updateStatisticsSideButtons();
-      await renderStatisticsValves();
+      renderStatisticsValves();
     }));
 
   document.querySelectorAll('#statistics-view .area-button')
@@ -173,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentStatisticsArea = btn.dataset.area;
       currentSelectedValve = null;
       updateStatisticsAreaButtons();
-      await renderStatisticsValves();
+      renderStatisticsValves();
     }));
 
   // Inicializa a view

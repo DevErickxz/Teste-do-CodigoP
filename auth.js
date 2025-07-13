@@ -21,5 +21,7 @@ function isLoggedIn() {
 
 // Logout
 function logout() {
+  localStorage.removeItem('savedArea');
+  localStorage.removeItem('savedSide');
   firebase.auth().signOut().then(() => location.reload());
 }

@@ -1,0 +1,5 @@
+COMMIT:PATCH CORRETO 11/07/2025
+
+ALTERAÇÕES:
+
+- Correção no Grafico de antes dos dois.

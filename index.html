@@ -124,17 +124,17 @@
         padding: 10px 20px;
         border: none;
         border-radius: 5px;
-        background-color: #25b346; /* Cor para Raizer/Caixa */
+        background-color: #6ddc36; /* Cor para Raizer/Caixa */
         color: white;
         cursor: pointer;
         transition: background-color 0.3s ease;
     }
     .area-button:hover {
-        background-color: #218838;
+        background-color: #292a29;
     }
     .area-button.active {
-        background-color: #196f3d;
-        border: 2px solid #145c2f;
+        background-color: #000000;
+        border: 2px solid #1c1d1c;
     }
 
     /* Estilo para ocultar o gráfico de barras inicialmente */
@@ -829,126 +829,182 @@ async function gerarGrafico() {
 
     // Função principal para realizar a pesquisa e gerar o gráfico
 async function performGraphSearch() {
-    const startDate = document.getElementById('search-start-date').value;
-    const endDate = document.getElementById('search-end-date').value;
-    const valveName = document.getElementById('search-valve').value.trim();
-    const sideFilter = document.getElementById('search-side').value;
-    const areaFilter = document.getElementById('search-area').value;
-    const chartType = document.getElementById('search-chart-type').value;
+  const startDate = document.getElementById('search-start-date').value;
+  const endDate   = document.getElementById('search-end-date').value;
+  const valveName = document.getElementById('search-valve').value.trim();
+  const sideFilter = document.getElementById('search-side').value;
+  const areaFilter = document.getElementById('search-area').value;
+  const chartType = document.getElementById('search-chart-type').value;
 
-    if (!startDate || !endDate) {
-        alert('Por favor, selecione as datas inicial e final para a pesquisa.');
-        return;
+  const canvas = document.getElementById('search-chart-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Validação básica
+  if (!startDate || !endDate) {
+    alert('Selecione as datas inicial e final para a pesquisa.');
+    return;
+  }
+  if (new Date(startDate) > new Date(endDate)) {
+    alert('A data inicial não pode ser posterior à data final.');
+    return;
+  }
+
+  // ISO para Firestore
+  const isoStart = new Date(new Date(startDate).setHours(0, 0, 0, 0)).toISOString();
+  const isoEnd   = new Date(new Date(endDate).setHours(23, 59, 59, 999)).toISOString();
+
+  // Monta a query
+  let query = db.collection('registros')
+    .where('data', '>=', isoStart)
+    .where('data', '<=', isoEnd);
+
+  if (sideFilter !== 'all') query = query.where('lado', '==', sideFilter);
+  if (areaFilter !== 'all') query = query.where('area', '==', areaFilter);
+
+  const snapshot = await query.get();
+  const countsByValveAndDate = {};
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const dataFormatada = formatarData(data.data); // DD/MM/YYYY
+    const valvulas = data.valvulas || {};
+
+    for (const [nome, notaStr] of Object.entries(valvulas)) {
+      const nota = parseInt(notaStr);
+      if (valveName && nome !== valveName) continue;
+
+      if (!countsByValveAndDate[nome]) countsByValveAndDate[nome] = {};
+      countsByValveAndDate[nome][dataFormatada] = nota; // salva nota (1 a 5)
     }
-    if (new Date(startDate) > new Date(endDate)) {
-        alert('A data inicial não pode ser posterior à final.');
-        return;
-    }
+  });
 
-    const startISO = new Date(startDate).toISOString();
-    const end = new Date(endDate);
-    end.setDate(end.getDate() + 1);
-    end.setHours(0, 0, 0, 0);
-    const endISO = end.toISOString();
+  if (searchChart) searchChart.destroy();
 
-    let query = db.collection('registros')
-        .where('data', '>=', startISO)
-        .where('data', '<', endISO);
+  if (Object.keys(countsByValveAndDate).length === 0) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#666";
+    ctx.fillText("Nenhum dado encontrado", canvas.width / 2, canvas.height / 2);
+    return;
+  }
 
-    if (sideFilter !== 'all') query = query.where('lado', '==', sideFilter);
-    if (areaFilter !== 'all') query = query.where('area', '==', areaFilter);
+  // Todas as datas envolvidas
+  const allDates = new Set();
+  Object.values(countsByValveAndDate).forEach(d => Object.keys(d).forEach(date => allDates.add(date)));
 
-    const snapshot = await query.get();
+  const sortedDates = Array.from(allDates).sort((a, b) => {
+    const [da, ma, aa] = a.split('/');
+    const [db, mb, ab] = b.split('/');
+    return new Date(`${aa}-${ma}-${da}`) - new Date(`${ab}-${mb}-${db}`);
+  });
 
-    const registros = [];
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.valvulas && (!valveName || data.valvulas[valveName] !== undefined)) {
-            registros.push({
-                data: data.data,
-                nota: Number(data.valvulas[valveName]),
-                valve: valveName || Object.keys(data.valvulas)[0] // fallback
-            });
-        }
-    });
-
-    registros.sort((a, b) => new Date(a.data) - new Date(b.data));
-
-    const labels = registros.map(r => {
-        const d = new Date(r.data);
-        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-    });
-    const data = registros.map(r => r.nota);
-
-    const ctx = document.getElementById('search-chart-canvas').getContext('2d');
-    if (searchChart) searchChart.destroy();
-
-    if (registros.length === 0) {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.font = "20px Arial";
-        ctx.textAlign = "center";
-        ctx.fillStyle = "#666";
-        ctx.fillText("Nenhum dado encontrado para os filtros selecionados.", ctx.canvas.width / 2, ctx.canvas.height / 2);
-        return;
-    }
+  if (chartType === 'line') {
+    const datasets = Object.entries(countsByValveAndDate).map(([nome, dateMap]) => ({
+      label: nome,
+      data: sortedDates.map(d => dateMap[d] ?? null),
+      fill: true,
+      tension: 0.3,
+      borderColor: getRandomColor(),
+      backgroundColor: 'rgba(0, 123, 255, 0.1)',
+      pointRadius: 4,
+      pointHoverRadius: 6
+    }));
 
     searchChart = new Chart(ctx, {
-        type: chartType,
-        data: {
-            labels: labels,
-            datasets: [{
-                label: `Nível de Sujeira - ${valveName}`,
-                data: data,
-                fill: true,
-                tension: 0.4,
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0,123,255,0.1)',
-                pointBackgroundColor: '#007bff',
-                pointBorderColor: '#fff',
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: `Evolução da Sujeira: ${valveName}`,
-                    font: { size: 18 }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: context => `Nota: ${context.raw}`
-                    }
-                },
-                legend: {
-                    display: true
-                }
+      type: 'line',
+      data: {
+        labels: sortedDates,
+        datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            min: 0,
+            max: 5,
+            title: {
+              display: true,
+              text: 'Nota (1–5)'
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 5,
-                    title: {
-                        display: true,
-                        text: 'Nota (1–5)'
-                    },
-                    ticks: {
-                        stepSize: 1
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Data'
-                    }
-                }
+            ticks: {
+              stepSize: 1
             }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Data'
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: `Evolução da Sujeira: ${valveName || 'Todas'}`
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `Nota: ${ctx.raw}`
+            }
+          }
         }
+      }
     });
+
+  } else {
+    // Gráfico de barra: soma quantas vezes a válvula teve nota ≥ 4
+    const somaPorValve = {};
+    Object.entries(countsByValveAndDate).forEach(([nome, datas]) => {
+      const total = Object.values(datas).filter(n => n >= 4).length;
+      somaPorValve[nome] = total;
+    });
+
+    const nomes = Object.keys(somaPorValve).sort();
+    const dados = nomes.map(n => somaPorValve[n]);
+
+    searchChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: nomes,
+        datasets: [{
+          label: 'Ocorrências de Sujeira (Nota ≥4)',
+          data: dados,
+          backgroundColor: 'rgba(255, 99, 132, 0.7)'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Ocorrências'
+            },
+            ticks: { stepSize: 1 }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Válvula'
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: `Ocorrências no período: ${startDate} a ${endDate}`
+          }
+        }
+      }
+    });
+  }
 }
+
 
 
 

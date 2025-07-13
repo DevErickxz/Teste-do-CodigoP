@@ -23,20 +23,25 @@
             text-align: center;
             max-width: 95%; /* Para telas menores */
         }
-        .image-container { /* Novo contêiner para múltiplas imagens */
-            display: flex;
-            flex-wrap: wrap; /* Permite que as imagens quebrem para a próxima linha */
-            justify-content: center;
-            gap: 20px; /* Espaçamento entre as imagens */
-            margin: 20px auto;
-        }
-        .displayedImage { /* Alterado para classe para múltiplos elementos */
-            max-width: 100%;
-            height: auto;
-            display: block;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+        .image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0; /* remove espaçamento */
+    flex-wrap: nowrap; /* impede quebra de linha */
+    overflow-x: auto; /* rolagem se não couber */
+}
+
+.displayedImage {
+    width: 400px;      /* ou 300px, 350px — ajuste como quiser */
+    height: auto;
+    display: block;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 0 5px;
+}
+
+
         #backButton {
             margin-top: 20px;
             padding: 10px 20px;

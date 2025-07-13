@@ -1,13 +1,9 @@
 // script.js
 
 // CONFIG INICIAL
+
+// Lista global de todas as válvulas, usada na view de votação
 const allValves = Array.from({ length: 48 }, (_, i) => `Válvula ${i + 1}`);
-const sides = {
-  A: allValves.slice(0, 12),
-  B: allValves.slice(12, 24),
-  C: allValves.slice(24, 36),
-  D: allValves.slice(36, 48)
-};
 
 let currentSide = 'A';
 let currentArea = 'Caixa'; // Área atual
@@ -36,7 +32,7 @@ const squareIndices = {
   },
   'Caixa': {
     // AGORA, 'A' e 'B' estão juntos dentro da mesma chave 'Caixa'
-    B: [0, 5], // Válvula 5 (índice 4) e Válvula 10 (índice 9) de Caixa B
+    B: [0, 4], // Válvula 5 (índice 4) e Válvula 10 (índice 9) de Caixa B
     A: [2]    // Válvula 3 (índice 2) de Caixa A
   }
 };
@@ -48,6 +44,43 @@ let inputRaizer, inputCaixa, inputUsuario, inputArea;
 let modalPerfil, btnSalvarPerfil, modalReset, btnSimReset, btnNaoReset;
 let modalConfirmar, btnSimConfirmar, btnNaoConfirmar;
 let modalResumo, resumoTextModal, btnFecharResumo, btnDownload;
+
+/**
+ * Retorna os nomes de válvulas contínuos para a área e lado informados,
+ * baseando-se em countsByArea e no mapeamento global de 1 a 48.
+ */
+function getValvesList(area, side) {
+  const counts = countsByArea[area];
+  if (!counts || !counts[side]) return [];
+  const offsets = {
+    A: 0,
+    B: counts.A,
+    C: counts.A + counts.B,
+    D: counts.A + counts.B + counts.C
+  };
+  const start = offsets[side];
+  const total = counts[side];
+  return Array.from({ length: total }, (_, i) => `Válvula ${start + i + 1}`);
+}
+
+function atualizarSelectValvulasComBaseNaAreaELado() {
+  const area = document.getElementById('search-area').value;
+  const lado = document.getElementById('search-side').value;
+  const select = document.getElementById('search-valve');
+  select.innerHTML = '<option value="">Todas</option>';
+
+  if (area !== 'all' && lado !== 'all') {
+    const valves = getValvesList(area, lado);
+    valves.forEach(nome => {
+      const opt = document.createElement('option');
+      opt.value = nome;
+      opt.textContent = nome;
+      select.appendChild(opt);
+    });
+  }
+}
+
+
 
 // Mostra apenas a view selecionada
 function showView(id) {
@@ -61,9 +94,17 @@ function startApp() {
   const uid = firebase.auth().currentUser.uid;
   db.collection('users').doc(uid).get()
     .then(doc => inputUsuario.value = doc.data().nome || '');
-  initValves();
+
+  // Restaura posição salva
+  const savedArea = localStorage.getItem('savedArea');
+  const savedSide = localStorage.getItem('savedSide');
+  if (savedArea && countsByArea[savedArea]) currentArea = savedArea;
+  if (savedSide && countsByArea[currentArea][savedSide]) currentSide = savedSide;
+
   inputArea.value = currentArea;
+  initValves();
 }
+
 
 // Login via Google
 async function handleGoogle() {
@@ -174,6 +215,8 @@ function mostrarPergunta(index, nome) {
   });
   perguntaContainer.appendChild(box);
 }
+
+
 
 // Bind de botões de reset, confirmar, download, etc.
 function bindListeners() {
@@ -294,6 +337,12 @@ document.addEventListener('DOMContentLoaded', () => {
   btnFecharResumo   = document.getElementById('btn-fechar-modal');
   btnDownload       = document.getElementById('btn-download-modal');
 
+  document.getElementById('search-area').addEventListener('change', atualizarSelectValvulasComBaseNaAreaELado);
+  document.getElementById('search-side').addEventListener('change', atualizarSelectValvulasComBaseNaAreaELado);
+  atualizarSelectValvulasComBaseNaAreaELado(); // já popula na carga
+
+
+
   // Login/Cadastro
   document.getElementById('login-form').onsubmit = async e => {
     e.preventDefault();
@@ -327,22 +376,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Botões área/ lado (view válvulas)
   areaBtns.forEach(btn => btn.onclick = () => {
     currentArea = btn.dataset.area;
+    localStorage.setItem('savedArea', currentArea);
     initValves();
   });
   sideBtns.forEach(btn => btn.onclick = () => {
     currentSide = btn.dataset.side;
+    localStorage.setItem('savedSide', currentSide);
     initValves();
   });
 });
 
-function preencherSelectValvulas() {
-  const select = document.getElementById('search-valve');
-  for (let i = 1; i <= 48; i++) {
-    const opt = document.createElement('option');
-    opt.value = `Válvula ${i}`;
-    opt.textContent = `Válvula ${i}`;
-    select.appendChild(opt);
-  }
-}
-document.addEventListener('DOMContentLoaded', preencherSelectValvulas);
+document.addEventListener('DOMContentLoaded', () => {
+  const areaSelect = document.getElementById('search-area');
+  const sideSelect = document.getElementById('search-side');
+
+  areaSelect.addEventListener('change', atualizarSelectValvulasComBaseNaAreaELado);
+  sideSelect.addEventListener('change', atualizarSelectValvulasComBaseNaAreaELado);
+
+  // popula na carga, sem precisar clicar
+  atualizarSelectValvulasComBaseNaAreaELado();
+});
+
+
+
 
