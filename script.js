@@ -27,13 +27,13 @@ const countsByArea = {
 // Quais índices devem ficar quadrados (0‑based) por área→lado
 const squareIndices = {
   'Raizer': {
-    C: [1],
-    D: [2]  // Apenas a Válvula 11 (índice 10) de Raizer C
+    C: [11]
+
   },
   'Caixa': {
     // AGORA, 'A' e 'B' estão juntos dentro da mesma chave 'Caixa'
-    B: [0, 4], // Válvula 5 (índice 4) e Válvula 10 (índice 9) de Caixa B
-    A: [2]    // Válvula 3 (índice 2) de Caixa A
+    B: [7, 4], // Válvula 5 (índice 4) e Válvula 10 (índice 9) de Caixa B
+    A: [1]    // Válvula 3 (índice 2) de Caixa A
   }
 };
 
